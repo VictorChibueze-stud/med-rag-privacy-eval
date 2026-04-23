@@ -1,0 +1,141 @@
+% Academic manuscript skeleton: fill TODOs before submission.
+% Compile from this directory, e.g.: pdflatex main.tex
+\documentclass[11pt, a4paper]{article}
+
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{microtype}
+\usepackage[T1]{fontenc}
+\usepackage[colorlinks=true, linkcolor=blue, citecolor=blue, urlcolor=blue]{hyperref}
+
+\title{Evaluating Central vs.\ Local Differential Privacy for Vector Embeddings in Medical RAG Systems}
+\author{%
+  Victor Okoroafor\and
+  Ifeanyi Omonigho Odugo\and
+  Gopal Krishna\and
+  Niramay Roopesh Kolalle\thanks{Affiliations: (TODO; fill before submission).}%
+}
+\date{\today}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+% TODO (Niramay): Summarize the exact empirical findings that appear in the
+% ``Results'' section and in \texttt{docs/figures/} (RAG/BERT utility vs.\ $\epsilon$,
+% LiRA TPR@0.1\%FPR, and ROUGE--L inversion curves). State the main quantitative
+% takeaways for central (Gaussian) vs.\ local (bottleneck+noise) mechanisms on the
+% ChatDoctor (or related) RAG study.
+\end{abstract}
+
+\section{Introduction}
+% TODO (Niramay): Discuss the RAG hallucination problem in the medical setting; the
+% sensitivity and regulatory posture of professional corpora such as ChatDoctor; and
+% the risk of \emph{white-box} or embedding-based extraction attacks when dense
+% retrievers expose patient-like text in vector form.
+
+\section{Methodology}
+
+We study two realizations of privacy on top of a fixed 384-d Sentence-BERT
+encoder, mirroring the implementation in the accompanying codebase.
+
+\paragraph{Central (Gaussian) mechanism.}
+The curator injects isotropic noise calibrated to ($\epsilon$, $\delta$)-differential
+privacy. With $L_2$ sensitivity~$\Delta_2$ fixed at $2$ (a standard bound for
+\emph{unit} embedding vectors, where neighbor databases differ in one row on the
+hypersphere, hence Euclidean distance of at most two; see implementation notes in the
+repository), the standard analytical Gaussian standard deviation is
+\begin{equation}
+  \sigma
+  = \frac{\Delta_2 \sqrt{2 \ln(1.25 / \delta)}}{\epsilon}
+  = \frac{2\sqrt{2\ln(1.25/\delta)}}{\epsilon} .
+  \label{eq:central-gauss}
+\end{equation}
+Noise is applied independently across coordinates (vectorized implementation) before
+FAISS retrieval and downstream evaluation.
+
+\paragraph{Local continuous projection (bottleneck).}
+The local model compresses the embedding to a 16-d linear bottleneck ($M_1$),
+L2-normalizes, injects the same family of Gaussian noise at the bottleneck, and
+decodes to 384~d with $M_2$, followed by L2 re-normalization. This enforces a bounded
+Euclidean change at the bottle-neck before the noise layer and yields unit vectors for
+FAISS-compatible retrieval.
+
+% TODO (Niramay): Cite the formal local DP (or LDP) variant this architecture is meant
+% to implement (e.g. randomized response vs.\ Gaussian) if you add a full proof plan.
+
+\section{Evaluation Framework}
+\label{sec:framework}
+
+The evaluation harness measures privacy leakage and end-task utility of the
+privatized embeddings, without yet coupling to a generative LLM: retrieval simulates
+RAG by nearest-neighbor match on the FAISS index, and BERTScore treats those strings
+as synthetic ``candidates.''
+
+\subsection{Likelihood Ratio Test (LiRA)} % TODO (Niramay): Tighten notation.
+A shadow linear classifier (logistic regression) on embeddings mirrors the target
+model, with member vs.\ non-member labels on a held-out shadow set. The analysis uses
+a logit + Gaussian calibration on the shadow non-member scores to set null moments,
+then p-values and TPR@fixed-FPR on the test split.
+
+\subsection{Embedding Inversion}
+% TODO (Niramay): State the FAISS + ROUGE--L attack setting (NN text chosen from a
+% reference index vs.\ gold string).
+
+\subsection{BERTScore Utility}
+% TODO (Niramay): State model family for BERTScore (e.g. RoBERTa) and the proxy for
+% RAG quality when the generator is not yet used.
+
+\section{Results}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/utility_vs_epsilon.png}
+  \caption{BERTScore F1 vs.\ $\epsilon$ for central and local privacy.}
+  \label{fig:util}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/mia_vs_epsilon.png}
+  \caption{LiRA TPR@0.1\%FPR under central vs.\ local privacy.}
+  \label{fig:mia}
+\end{figure}
+
+\begin{figure}[t]
+  \centering
+  \includegraphics[width=0.9\linewidth]{figures/inversion_vs_epsilon.png}
+  \caption{ROUGE--L inversion reconstruction fidelity vs.\ $\epsilon$.}
+  \label{fig:inv}
+\end{figure}
+
+% TODO (Niramay): Analyze the tradeoff curves. At what $\epsilon$ does Central DP
+% become useless? Does Local DP provide better or worse utility at the same privacy
+% bound? Refer to Figures \ref{fig:util}--\ref{fig:inv}.
+
+\begin{table}[h]
+  \centering
+  \begin{tabular}{@{}lccc@{}}
+    \toprule
+    & BERT F1 (utility) & LiRA TPR (0.1\%FPR) & ROUGE--L (inversion) \\
+    \midrule
+    % example row, replace with paper numbers
+    Central, $\epsilon = 0.1$ & --- & --- & --- \\
+    \bottomrule
+  \end{tabular}
+  \caption{Spot-check metrics (placeholders: fill from \texttt{data/results.csv}).}
+  \end{table}
+
+\section{Conclusion}
+% TODO (Niramay): Summarize the architectural recommendations for \emph{secure} RAG
+% deployments: when to favor central curation, when local noise at the client makes
+% sense, and which evaluation hooks (MIA, inversion, BERT) should remain in CI for
+% medical RAG.
+
+% \bibliographystyle{plainnat}
+% \bibliography{references}
+% ^ Uncomment when you add a references.bib next to this file.
+
+\end{document}

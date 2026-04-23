@@ -1,0 +1,16 @@
+# med-rag-privacy-eval — CPU-oriented ML / research stack (Sprint 1)
+torch>=2.0.0
+sentence-transformers>=2.2.2
+faiss-cpu>=1.7.4
+diffprivlib>=0.6.2
+scikit-learn>=1.2.2
+pandas>=2.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+matplotlib>=3.7.0
+bert-score>=0.3.13
+rouge-score>=0.1.2
+seaborn>=0.12.2
+pytest>=7.3.1
+ruff>=0.1.0
+jupyterlab>=4.0.0
