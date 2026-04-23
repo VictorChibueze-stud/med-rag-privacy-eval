@@ -18,7 +18,7 @@ We strictly use Python 3.10+ and manage dependencies via `requirements.txt`.
 1. **Clone the repository:**
 
    ```bash
-   git clone https://github.com/YOUR-USERNAME/med-rag-privacy-eval.git
+   git clone https://github.com/VictorChibueze-stud/med-rag-privacy-eval.git
    cd med-rag-privacy-eval
    ```
 
