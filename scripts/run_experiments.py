@@ -39,8 +39,61 @@ def _encode_corpus(model: RAGBaseline, texts: list[str]) -> np.ndarray:
     return np.asarray(arr, dtype=np.float32)
 
 
+def _eval_mechanism(
+    embs: np.ndarray,
+    target_labels: np.ndarray,
+    orig_by_row: list[str],
+    sample_i: np.ndarray,
+    lira: LiRAMembershipInference,
+    inv: EmbeddingInversion,
+    util: UtilityEvaluator,
+) -> dict[str, float]:
+    """Run MIA, inversion, and BERTScore evaluation on a batch of embeddings.
+
+    Args:
+        embs: ``(N, 384)`` possibly privatised embeddings to evaluate.
+        target_labels: ``(N,)`` member (1) / non-member (0) labels.
+        orig_by_row: Gold text strings aligned with ``embs`` rows.
+        sample_i: Row indices to use for ROUGE-L inversion (fixed 100-sample subset).
+        lira: Trained ``LiRAMembershipInference`` instance.
+        inv: Built ``EmbeddingInversion`` index.
+        util: ``UtilityEvaluator`` instance.
+
+    Returns:
+        Dict with keys ``tpr_mia``, ``inversion_rouge_l_mean``,
+        ``bert_precision``, ``bert_recall``, ``bert_f1``.
+    """
+    tpr = lira.evaluate_tpr_at_fpr(
+        np.asarray(embs, dtype=np.float64), target_labels, 0.001
+    )
+
+    rouge_scores = []
+    for j in sample_i:
+        rc = inv.nearest_neighbor_lookup(embs[j], orig_by_row[j])
+        rouge_scores.append(float(rc["rouge_l_fmeasure"]))
+    mean_rouge = float(np.mean(rouge_scores)) if rouge_scores else 0.0
+
+    cands, refs = [], []
+    for j in range(embs.shape[0]):
+        cands.append(inv.nearest_neighbor_lookup(embs[j], orig_by_row[j])["retrieved_text"])
+        refs.append(orig_by_row[j])
+    bs = util.compute_bertscore(references=refs, candidates=cands)
+
+    return {
+        "tpr_mia": tpr,
+        "inversion_rouge_l_mean": mean_rouge,
+        "bert_precision": bs["precision"],
+        "bert_recall": bs["recall"],
+        "bert_f1": bs["f1"],
+    }
+
+
 def main() -> None:
     """70/30 target vs. shadow, LiRA, inversion ROUGE, and BERTScore utility by ε."""
+    # Global seeds for full reproducibility of noise draws, not just data splits.
+    np.random.seed(0)
+    torch.manual_seed(0)
+
     loader = ChatDoctorLoader("data")
     all_texts = loader.load_data()
     n = len(all_texts)
@@ -80,7 +133,7 @@ def main() -> None:
     # Row-aligned texts for the global retrieval index.
     line_texts: list[str] = list(all_texts)
 
-    lira = LiRAMembershipInference()
+    lira = LiRAMembershipInference(n_shadow_models=16)
     lira.train_shadow_models(e_sm, e_snm)
 
     # Fixed 100 target rows to compare ROUGE across ε without resampling noise.
@@ -98,16 +151,31 @@ def main() -> None:
     )
     util = UtilityEvaluator()
 
-    rows: list[dict[str, float | int | str]] = []
+    rows: list[dict[str, float | str]] = []
+
+    # --- Baseline: unperturbed embeddings (epsilon = inf) ---
+    baseline_embs = np.copy(target_embs)
+    baseline_metrics = _eval_mechanism(
+        baseline_embs, target_labels, orig_by_row, sample_i, lira, inv, util
+    )
+    rows.append({"epsilon": float("inf"), "mechanism": "Baseline", **baseline_metrics})
+
+    # --- Privacy sweep ---
     epsilons = [0.1, 1.0, 5.0, 10.0]
 
     for eps in epsilons:
+        # Central DP
         central = CentralDPMechanism(epsilon=float(eps), delta=1e-5)
         noisy_c = np.asarray(
             central.apply_noise(np.asarray(target_embs, dtype=np.float64)),
             dtype=np.float32,
         )
+        central_metrics = _eval_mechanism(
+            noisy_c, target_labels, orig_by_row, sample_i, lira, inv, util
+        )
+        rows.append({"epsilon": eps, "mechanism": "Central", **central_metrics})
 
+        # Local DP
         local = LocalDPProjector(
             input_dim=384, bottleneck_dim=16, epsilon=float(eps), delta=1e-5
         )
@@ -115,57 +183,26 @@ def main() -> None:
         with torch.no_grad():
             t_in = torch.from_numpy(np.ascontiguousarray(target_embs, dtype=np.float32))
             noisy_l = local(t_in).numpy().astype(np.float32)
-
-        tpr_c = lira.evaluate_tpr_at_fpr(
-            np.asarray(noisy_c, dtype=np.float64), target_labels, 0.001
+        local_metrics = _eval_mechanism(
+            noisy_l, target_labels, orig_by_row, sample_i, lira, inv, util
         )
-        tpr_l = lira.evaluate_tpr_at_fpr(
-            np.asarray(noisy_l, dtype=np.float64), target_labels, 0.001
-        )
-
-        rouge_c, rouge_l = [], []
-        for j in sample_i:
-            otxt = orig_by_row[j]
-            rc = inv.nearest_neighbor_lookup(noisy_c[j], otxt)
-            rl = inv.nearest_neighbor_lookup(noisy_l[j], otxt)
-            rouge_c.append(float(rc["rouge_l_fmeasure"]))
-            rouge_l.append(float(rl["rouge_l_fmeasure"]))
-        mean_rouge_c = float(np.mean(rouge_c)) if rouge_c else 0.0
-        mean_rouge_l = float(np.mean(rouge_l)) if rouge_l else 0.0
-
-        # RAG sim: NNs from noisy query vectors to clean corpus, vs. same-line golds.
-        cand_c, cand_l, ref_b = [], [], []
-        for j in range(target_embs.shape[0]):
-            otxt = orig_by_row[j]
-            cand_c.append(
-                inv.nearest_neighbor_lookup(noisy_c[j], otxt)["retrieved_text"]
-            )
-            cand_l.append(
-                inv.nearest_neighbor_lookup(noisy_l[j], otxt)["retrieved_text"]
-            )
-            ref_b.append(otxt)
-        b_c = util.compute_bertscore(references=ref_b, candidates=cand_c)
-        b_l = util.compute_bertscore(references=ref_b, candidates=cand_l)
-
-        rows.append(
-            {
-                "epsilon": eps,
-                "tpr_mia_central": tpr_c,
-                "tpr_mia_local": tpr_l,
-                "inversion_rouge_l_mean_central": mean_rouge_c,
-                "inversion_rouge_l_mean_local": mean_rouge_l,
-                "utility_bert_precision_central": b_c["precision"],
-                "utility_bert_recall_central": b_c["recall"],
-                "utility_bert_f1_central": b_c["f1"],
-                "utility_bert_precision_local": b_l["precision"],
-                "utility_bert_recall_local": b_l["recall"],
-                "utility_bert_f1_local": b_l["f1"],
-            }
-        )
+        rows.append({"epsilon": eps, "mechanism": "Local", **local_metrics})
 
     out_dir = _ROOT / "data"
     out_dir.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(rows)
+    # Canonical column order.
+    df = df[
+        [
+            "epsilon",
+            "mechanism",
+            "tpr_mia",
+            "inversion_rouge_l_mean",
+            "bert_precision",
+            "bert_recall",
+            "bert_f1",
+        ]
+    ]
     out_path = out_dir / "results.csv"
     df.to_csv(out_path, index=False)
     print(f"Wrote {out_path} with {len(df)} rows.")

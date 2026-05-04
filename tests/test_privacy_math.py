@@ -2,6 +2,7 @@
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 
 from src.models.central_dp import CentralDPMechanism
 from src.models.local_dp import LocalDPProjector
@@ -56,3 +57,68 @@ def test_local_dp_pipeline() -> None:
     norms = torch.linalg.vector_norm(y, dim=-1, ord=2)
     one = torch.ones(32, dtype=y.dtype, device=y.device)
     assert torch.allclose(norms, one, atol=1e-5, rtol=1e-5)
+
+
+def test_local_dp_bottleneck_sensitivity() -> None:
+    """Verifies that the global L2 sensitivity of the bottleneck mapping is <= 2.
+
+    The DP guarantee requires that for any two adjacent inputs (differing by
+    one document), their representations in the bottleneck space differ by at
+    most Delta_f = 2 in L2 norm. Since all inputs are L2-normalized to the
+    unit hypersphere before noise injection, the maximum possible L2 distance
+    between any two bottleneck representations is 2 (antipodal points on the
+    unit sphere). This test constructs 10,000 random pairs of unit vectors,
+    projects them through M1, normalizes, and verifies the maximum observed
+    L2 distance never exceeds 2 + 1e-5 (numerical tolerance).
+    """
+    torch.manual_seed(42)
+    model = LocalDPProjector(input_dim=384, bottleneck_dim=16, epsilon=1.0, delta=1e-5)
+
+    # Generate 10,000 random unit vectors in 384-d.
+    n_pairs = 10_000
+    x1 = torch.randn(n_pairs, 384)
+    x2 = torch.randn(n_pairs, 384)
+    x1 = F.normalize(x1, p=2, dim=-1)
+    x2 = F.normalize(x2, p=2, dim=-1)
+
+    with torch.no_grad():
+        # Project to bottleneck and normalize (exactly as in forward()).
+        z1 = F.normalize(model.M1(x1), p=2, dim=-1)
+        z2 = F.normalize(model.M1(x2), p=2, dim=-1)
+
+    # Compute pairwise L2 distances in bottleneck space.
+    dists = torch.linalg.vector_norm(z1 - z2, dim=-1, ord=2)
+    max_dist = float(dists.max())
+
+    assert max_dist <= 2.0 + 1e-5, (
+        f"Bottleneck sensitivity bound violated: max L2 distance = {max_dist:.6f}, "
+        f"expected <= 2.0. The noise scale sigma is calibrated to Delta_f = 2; "
+        f"if this bound is exceeded, the (epsilon, delta)-DP guarantee does not hold."
+    )
+
+
+def test_local_dp_antipodal_sensitivity() -> None:
+    """Verifies the worst-case sensitivity using antipodal unit vectors.
+
+    Antipodal points (x, -x) achieve the maximum L2 distance of 2 on the
+    unit sphere. After M1 projection and L2-normalization, antipodal pairs
+    in the input space may not remain antipodal in the bottleneck space,
+    but the bottleneck distance must still be <= 2.
+    """
+    torch.manual_seed(0)
+    model = LocalDPProjector(input_dim=384, bottleneck_dim=16, epsilon=1.0, delta=1e-5)
+
+    x = torch.randn(1000, 384)
+    x = F.normalize(x, p=2, dim=-1)
+    neg_x = -x  # Antipodal pairs.
+
+    with torch.no_grad():
+        z_pos = F.normalize(model.M1(x), p=2, dim=-1)
+        z_neg = F.normalize(model.M1(neg_x), p=2, dim=-1)
+
+    dists = torch.linalg.vector_norm(z_pos - z_neg, dim=-1, ord=2)
+    max_dist = float(dists.max())
+
+    assert max_dist <= 2.0 + 1e-5, (
+        f"Antipodal sensitivity bound violated: {max_dist:.6f} > 2.0"
+    )

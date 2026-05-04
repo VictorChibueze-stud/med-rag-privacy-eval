@@ -56,12 +56,25 @@ repository), the standard analytical Gaussian standard deviation is
 Noise is applied independently across coordinates (vectorized implementation) before
 FAISS retrieval and downstream evaluation.
 
-\paragraph{Local continuous projection (bottleneck).}
-The local model compresses the embedding to a 16-d linear bottleneck ($M_1$),
-L2-normalizes, injects the same family of Gaussian noise at the bottleneck, and
-decodes to 384~d with $M_2$, followed by L2 re-normalization. This enforces a bounded
-Euclidean change at the bottle-neck before the noise layer and yields unit vectors for
-FAISS-compatible retrieval.
+\paragraph{Local DP via fixed random orthogonal projection.}
+To circumvent the curse of dimensionality ($d = 384$) that would render
+direct Gaussian mechanism application in the full embedding space
+utility-destroying~\cite{du2023sanitizing}, we adopt a three-stage local
+privatisation pipeline inspired by Du et al.\ (2023). Each document embedding
+is first projected to a 16-dimensional bottleneck via a \emph{fixed, random
+orthogonal} linear map $M_1 \in \mathbb{R}^{16 \times 384}$, initialised with
+\texttt{nn.init.orthogonal\_} and frozen throughout all experiments. The
+bottleneck vector is $\ell_2$-normalised, placing it on the 15-dimensional
+unit sphere and bounding the global $\ell_2$ sensitivity to $\Delta_2 f = 2$.
+Calibrated Gaussian noise $\mathcal{N}(0, \sigma^2 I_{16})$ with
+$\sigma = \frac{2\sqrt{2\ln(1.25/\delta)}}{\epsilon}$ is then injected
+independently per document, satisfying $(\epsilon, \delta)$-LDP in the
+bottleneck space. The noisy vector is decoded to 384 dimensions via a second
+fixed orthogonal map $M_2 \in \mathbb{R}^{384 \times 16}$ and $\ell_2$-renormalised
+for FAISS ingestion. Both the decoding and renormalisation are
+data-independent functions of the mechanism output and therefore preserve the
+$(\epsilon, \delta)$ guarantee without additional privacy loss, by the
+post-processing theorem~\cite[Prop.~2.1]{dwork2014algorithmic}.
 
 % TODO (Niramay): Cite the formal local DP (or LDP) variant this architecture is meant
 % to implement (e.g. randomized response vs.\ Gaussian) if you add a full proof plan.
@@ -79,6 +92,17 @@ A shadow linear classifier (logistic regression) on embeddings mirrors the targe
 model, with member vs.\ non-member labels on a held-out shadow set. The analysis uses
 a logit + Gaussian calibration on the shadow non-member scores to set null moments,
 then p-values and TPR@fixed-FPR on the test split.
+
+We report the True Positive Rate (TPR) at a fixed False Positive Rate (FPR)
+of $0.1\%$ rather than the Area Under the ROC Curve (AUC), following the
+recommendation of Carlini et al.~\cite{carlini2022membership}. AUC averages
+attack performance across all operating thresholds, including high-FPR
+regimes that are practically irrelevant to a real adversary. An attack that
+perfectly identifies $0.1\%$ of members while guessing randomly on the
+remainder achieves an AUC of only $\approx 51\%$, entirely concealing a
+severe localised privacy breach. TPR at $0.1\%$ FPR measures the worst-case
+threat: the fraction of members an adversary can identify with near-certainty
+of not triggering a false alarm.
 
 \subsection{Embedding Inversion}
 % TODO (Niramay): State the FAISS + ROUGE--L attack setting (NN text chosen from a
@@ -127,6 +151,43 @@ then p-values and TPR@fixed-FPR on the test split.
   \end{tabular}
   \caption{Spot-check metrics (placeholders: fill from \texttt{data/results.csv}).}
   \end{table}
+
+\section{Limitations}
+
+Several assumptions bound the scope of the guarantees reported in this work.
+
+\textbf{Embedding-layer scope.} The $(\epsilon, \delta)$-DP guarantee applies
+exclusively to the stored embedding vectors. Downstream LLM generation
+conditioned on retrieved context is not analysed; outputs of the generative
+model may still leak information about the retrieval corpus through semantic
+content, and this threat is treated as out of scope.
+
+\textbf{Encoder privacy.} The \texttt{all-MiniLM-L6-v2} encoder is applied
+to raw documents before privatisation. The encoder itself is not private; an
+adversary with access to the encoder and a noisy embedding can still invert
+the embedding up to the noise level. The privacy guarantee therefore assumes
+the encoder is public knowledge, consistent with our white-box threat model.
+
+\textbf{LiRA adaptation to embedding space.} Carlini et al.'s LiRA framework
+was designed for classification models with softmax outputs. We adapt it to an
+embedding retrieval setting by training logistic regression shadow classifiers
+on raw embeddings and applying the logit transform to their output
+probabilities. This adaptation has not been formally validated against a
+native embedding-space MIA baseline, and the reported TPR values should be
+interpreted as approximate lower bounds on true worst-case leakage.
+
+\textbf{Fixed projection maps.} The orthogonal maps $M_1$ and $M_2$ in the
+Local DP mechanism are fixed at random initialisation and not trained. While
+this maximises the privacy argument (zero data dependence of the projection),
+it does not optimise the utility of the 384-to-16-dimensional compression.
+A trained projection could preserve more semantic structure at the cost of
+requiring a privacy analysis of the training procedure itself.
+
+\textbf{Single noise realisation per $\epsilon$.} Each operating point in the
+tradeoff curves represents a single noise draw. Per Bollegala et al.~(2025),
+variance across noise realisations can be characterised by running the mechanism
+multiple times; we report point estimates and note that stochasticity in the
+noise may contribute to non-monotonic behaviour at extreme $\epsilon$ values.
 
 \section{Conclusion}
 % TODO (Niramay): Summarize the architectural recommendations for \emph{secure} RAG

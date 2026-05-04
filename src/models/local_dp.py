@@ -13,12 +13,19 @@ import torch.nn.functional as F
 
 
 class LocalDPProjector(nn.Module):
-    """Two linear maps with Gaussian noise in the (normalized) latent bottleneck.
+    """Two fixed random orthogonal projections with Gaussian noise in the bottleneck.
+
+    M1 and M2 are fixed random orthogonal projections initialized via
+    ``nn.init.orthogonal_`` and frozen throughout all experiments (weights have
+    ``requires_grad = False``). They are not trained. The DP guarantee
+    ``(epsilon, delta)`` applies to the Gaussian noise injected in the bottleneck
+    space and is preserved through the fixed linear post-processing by the
+    post-processing theorem (Dwork & Roth 2014, Prop. 2.1).
 
     M1: ``R^{input_dim} -> R^{bottleneck_dim}``, M2: ``R^{bottleneck_dim} ->
-    R^{input_dim}`` (no bias, per spec). The bottleneck is L2-normalized *before* local
-    noise, so the noisy latent has controlled sensitivity; after M2, outputs are
-    re-normalized to unit length for FAISS/KNN pipelines that expect unit vectors.
+    R^{input_dim}`` (no bias, per spec). The bottleneck is L2-normalized *before*
+    local noise, so the noisy latent has controlled sensitivity; after M2, outputs
+    are re-normalized to unit length for FAISS/KNN pipelines that expect unit vectors.
 
     Attributes:
         input_dim: Input embedding dimension (e.g. 384 for the baseline encoder).
@@ -52,6 +59,10 @@ class LocalDPProjector(nn.Module):
         self.delta = float(delta)
         self.M1 = nn.Linear(input_dim, bottleneck_dim, bias=False)
         self.M2 = nn.Linear(bottleneck_dim, input_dim, bias=False)
+        nn.init.orthogonal_(self.M1.weight)
+        nn.init.orthogonal_(self.M2.weight)
+        self.M1.weight.requires_grad = False
+        self.M2.weight.requires_grad = False
 
     def inject_noise(self, z: torch.Tensor) -> torch.Tensor:
         """Add isotropic Gaussian noise to each row of the bottleneck ``z``.
