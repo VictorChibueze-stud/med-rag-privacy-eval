@@ -7,8 +7,21 @@ Run from the repository root, e.g.:
 
 from __future__ import annotations
 
+import logging
 import sys
+import time
 from pathlib import Path
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s | %(levelname)s | %(message)s",
+    datefmt="%H:%M:%S",
+    handlers=[
+        logging.StreamHandler(),
+        logging.FileHandler("data/experiment.log", mode="w", encoding="utf-8"),
+    ],
+)
+log = logging.getLogger(__name__)
 
 # Allow ``python scripts/run_experiments.py`` without a prior PYTHONPATH=.
 _ROOT = Path(__file__).resolve().parents[1]
@@ -29,13 +42,15 @@ from src.models.local_dp import LocalDPProjector
 from src.models.rag_baseline import RAGBaseline
 
 
-def _encode_corpus(model: RAGBaseline, texts: list[str]) -> np.ndarray:
+def _encode_corpus(model: RAGBaseline, texts: list[str], label: str) -> np.ndarray:
     """Helper: ST encoder, L2-norm, float32, shape ``(n, 384)``."""
+    log.info("Encoding start | phase=%s | texts=%d", label, len(texts))
     arr = model.model.encode(
         list(texts),
         normalize_embeddings=True,
         show_progress_bar=False,
     )
+    log.info("Encoding finished | phase=%s | texts=%d", label, len(texts))
     return np.asarray(arr, dtype=np.float32)
 
 
@@ -47,6 +62,7 @@ def _eval_mechanism(
     lira: LiRAMembershipInference,
     inv: EmbeddingInversion,
     util: UtilityEvaluator,
+    label: str,
 ) -> dict[str, float]:
     """Run MIA, inversion, and BERTScore evaluation on a batch of embeddings.
 
@@ -77,7 +93,9 @@ def _eval_mechanism(
     for j in range(embs.shape[0]):
         cands.append(inv.nearest_neighbor_lookup(embs[j], orig_by_row[j])["retrieved_text"])
         refs.append(orig_by_row[j])
+    log.info("BERTScore starting — this may take several minutes on CPU | %s", label)
     bs = util.compute_bertscore(references=refs, candidates=cands)
+    log.info("BERTScore finished | %s", label)
 
     return {
         "tpr_mia": tpr,
@@ -90,12 +108,24 @@ def _eval_mechanism(
 
 def main() -> None:
     """70/30 target vs. shadow, LiRA, inversion ROUGE, and BERTScore utility by ε."""
+    start_time = time.time()
     # Global seeds for full reproducibility of noise draws, not just data splits.
     np.random.seed(0)
     torch.manual_seed(0)
 
+    log.info("Experiment script starting")
     loader = ChatDoctorLoader("data")
     all_texts = loader.load_data()
+    initial_corpus_size = len(all_texts)
+    log.info("Corpus loaded | texts_before_cap=%d", initial_corpus_size)
+    # Cap corpus size for CPU-feasible runtime; sufficient for stable LiRA statistics
+    MAX_CORPUS = 5000
+    if len(all_texts) > MAX_CORPUS:
+        import random
+
+        random.seed(42)
+        all_texts = random.sample(all_texts, MAX_CORPUS)
+    log.info("Corpus ready | texts_after_cap=%d | max_corpus=%d", len(all_texts), MAX_CORPUS)
     n = len(all_texts)
     if n < 4:
         msg = f"Need at least 4 lines for MIA splits; got {n}."
@@ -117,10 +147,10 @@ def main() -> None:
     )
 
     rag = RAGBaseline()
-    e_sm = _encode_corpus(rag, sm_text)
-    e_snm = _encode_corpus(rag, snm_text)
-    e_tm = _encode_corpus(rag, tm_text)
-    e_tnm = _encode_corpus(rag, tnm_text)
+    e_sm = _encode_corpus(rag, sm_text, "shadow members")
+    e_snm = _encode_corpus(rag, snm_text, "shadow non-members")
+    e_tm = _encode_corpus(rag, tm_text, "target members")
+    e_tnm = _encode_corpus(rag, tnm_text, "target non-members")
 
     target_embs = np.vstack([e_tm, e_tnm])
     target_labels = np.concatenate(
@@ -129,12 +159,14 @@ def main() -> None:
             np.zeros(e_tnm.shape[0], dtype=np.int64),
         ]
     )
-    all_clean = _encode_corpus(rag, all_texts)
+    all_clean = _encode_corpus(rag, all_texts, "clean reference corpus")
     # Row-aligned texts for the global retrieval index.
     line_texts: list[str] = list(all_texts)
 
     lira = LiRAMembershipInference(n_shadow_models=16)
+    log.info("LiRA shadow training starting | shadow_models=%d", lira.n_shadow_models)
     lira.train_shadow_models(e_sm, e_snm)
+    log.info("LiRA shadow training finished | shadow_models=%d", lira.n_shadow_models)
 
     # Fixed 100 target rows to compare ROUGE across ε without resampling noise.
     rng = np.random.default_rng(42)
@@ -149,33 +181,53 @@ def main() -> None:
     inv = EmbeddingInversion(
         line_texts, np.ascontiguousarray(all_clean, dtype=np.float32)
     )
+    log.info("Loading BERTScore model (roberta-large) — one-time load, this may take a few minutes")
     util = UtilityEvaluator()
 
     rows: list[dict[str, float | str]] = []
 
     # --- Baseline: unperturbed embeddings (epsilon = inf) ---
+    log.info("Baseline evaluation starting")
     baseline_embs = np.copy(target_embs)
     baseline_metrics = _eval_mechanism(
-        baseline_embs, target_labels, orig_by_row, sample_i, lira, inv, util
+        baseline_embs,
+        target_labels,
+        orig_by_row,
+        sample_i,
+        lira,
+        inv,
+        util,
+        "Baseline",
     )
     rows.append({"epsilon": float("inf"), "mechanism": "Baseline", **baseline_metrics})
+    log.info("Baseline evaluation finished")
 
     # --- Privacy sweep ---
     epsilons = [0.1, 1.0, 5.0, 10.0]
 
     for eps in epsilons:
         # Central DP
+        log.info("Evaluation starting | epsilon=%s | mechanism=Central", eps)
         central = CentralDPMechanism(epsilon=float(eps), delta=1e-5)
         noisy_c = np.asarray(
             central.apply_noise(np.asarray(target_embs, dtype=np.float64)),
             dtype=np.float32,
         )
         central_metrics = _eval_mechanism(
-            noisy_c, target_labels, orig_by_row, sample_i, lira, inv, util
+            noisy_c,
+            target_labels,
+            orig_by_row,
+            sample_i,
+            lira,
+            inv,
+            util,
+            f"epsilon={eps} mechanism=Central",
         )
         rows.append({"epsilon": eps, "mechanism": "Central", **central_metrics})
+        log.info("Evaluation finished | epsilon=%s | mechanism=Central", eps)
 
         # Local DP
+        log.info("Evaluation starting | epsilon=%s | mechanism=Local", eps)
         local = LocalDPProjector(
             input_dim=384, bottleneck_dim=16, epsilon=float(eps), delta=1e-5
         )
@@ -184,9 +236,17 @@ def main() -> None:
             t_in = torch.from_numpy(np.ascontiguousarray(target_embs, dtype=np.float32))
             noisy_l = local(t_in).numpy().astype(np.float32)
         local_metrics = _eval_mechanism(
-            noisy_l, target_labels, orig_by_row, sample_i, lira, inv, util
+            noisy_l,
+            target_labels,
+            orig_by_row,
+            sample_i,
+            lira,
+            inv,
+            util,
+            f"epsilon={eps} mechanism=Local",
         )
         rows.append({"epsilon": eps, "mechanism": "Local", **local_metrics})
+        log.info("Evaluation finished | epsilon=%s | mechanism=Local", eps)
 
     out_dir = _ROOT / "data"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -205,7 +265,15 @@ def main() -> None:
     ]
     out_path = out_dir / "results.csv"
     df.to_csv(out_path, index=False)
-    print(f"Wrote {out_path} with {len(df)} rows.")
+    log.info("Results written | path=%s | rows=%d", out_path.resolve(), len(df))
+    elapsed = time.time() - start_time
+    elapsed_minutes = int(elapsed // 60)
+    elapsed_seconds = int(elapsed % 60)
+    log.info(
+        "Experiment script finished | elapsed=%dm %02ds",
+        elapsed_minutes,
+        elapsed_seconds,
+    )
 
 
 if __name__ == "__main__":

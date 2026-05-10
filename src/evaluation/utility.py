@@ -22,11 +22,16 @@ class UtilityEvaluator:
             metric_model: HuggingFace model id, e.g. ``roberta-large``.
         """
         self.metric_model = metric_model
+        self._scorer = bert_score.BERTScorer(
+            model_type=self.metric_model,
+            lang="en",
+            rescale_with_baseline=False,
+        )
 
     def compute_bertscore(
         self, references: list[str], candidates: list[str]
     ) -> dict[str, Any]:
-        """Compute mean P/R/F1 with :func:`bert_score.score`.
+        """Compute mean P/R/F1 with a cached :class:`bert_score.BERTScorer`.
 
         Args:
             references: One gold string per row (e.g. original prompt text).
@@ -35,13 +40,7 @@ class UtilityEvaluator:
         Returns:
             ``{"precision", "recall", "f1"}`` with scalar means over the micro-batch.
         """
-        p, r, f1 = bert_score.score(
-            candidates,
-            references,
-            model_type=self.metric_model,
-            lang="en",
-            verbose=False,
-        )
+        p, r, f1 = self._scorer.score(candidates, references)
         return {
             "precision": p.mean().item(),
             "recall": r.mean().item(),

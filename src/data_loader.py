@@ -73,6 +73,11 @@ def _read_strings_from_json(path: Path) -> list[str]:
             t = row.get("text") or row.get("utterance") or row.get("content")
             if t is not None and isinstance(t, str):
                 out.append(t)
+            elif row.get("input") or row.get("output"):
+                instruction = str(row.get("instruction", "")).strip()
+                patient_input = str(row.get("input", "")).strip()
+                doctor_output = str(row.get("output", "")).strip()
+                out.append(f"{instruction} Patient: {patient_input} Doctor: {doctor_output}")
             else:
                 p = str(row.get("patient", "Patient: [unknown]"))
                 d = str(row.get("doctor", "Doctor: [unknown]"))
