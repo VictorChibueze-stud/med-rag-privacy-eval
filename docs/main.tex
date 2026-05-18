@@ -31,41 +31,10 @@
 \end{abstract}
 
 \section{Introduction}
-
-A Retrieval-Augmented Generation (RAG) architecture has become a common architecture to
-implement Large Language Models (LLMs) in the clinical workflow and allow semantic search in
-very large, previously siloed databases in medicine. Such systems are not only sensitive to
-privacy laws, but patient safety is at stake, as these systems are regularly tasked with
-managing the most private and sensitive medical information --- patient consulting logs,
-structured clinical information and unstructured diagnostic text. Managing privacy is an
-important, but often overlooked, concern when keeping retrieved documents as dense vector
-representations to reduce hallucination in RAG by grounding the generative model in the
-retrieved documents. As characterized by \citet{zeng2024}, the open retrieval database
-expands the active threat landscape by exposing the underlying corpus to unauthorized
-extraction. Importantly, embeddings of text cannot be treated like a one-way anonymization:
-\citet{morris2023} showed that embeddings trained on dense vectors from the MIMIC-III
-clinical dataset can be inverted iteratively to accurately recover up to 89\% of patient
-names, sufficient to make embedding storage impractical in any regulated health care
-environment.
-
-Clearly, to address these weaknesses, privacy protection has to occur at the embedding layer
-in the RAG pipeline. Applying differential privacy (DP) constraints directly to the embedding
-vectors reduces the amount of data that can leak out of embeddings at rest, without the need
-to retrain the underlying language model or architectural changes to the generation pipeline
-or trust that a centralized cloud data custodian isn't leaking out data. Such a targeted
-approach provides end-to-end privacy guarantees at relatively low operational cost which fits
-the resource constraints of real-world clinical deployments.
-
-We perform the first empirical and comprehensive comparison between three DP paradigms
-(Central, Local, Metric DP) that are applied to a medical RAG embedding benchmark using a
-384-dimensional \texttt{all-MiniLM-L6-v2} encoder. We have three complementary axes:
-membership inference attack (MIA) resistance under the Likelihood Ratio Attack (LiRA)
-framework, text reconstruction fidelity (measured by ROUGE-L embedding inversion) and
-downstream semantic retrieval utility (measured by BERTScore F1). A central observation
-across all three paradigms is that injected noise is not the dominant constraint on semantic
-utility --- structural vector compression and neighbourhood clustering impose a utility
-ceiling regardless of noise magnitude, a flat-curve phenomenon that challenges standard
-assumptions about the privacy-utility tradeoff in medical RAG systems.
+% TODO (Niramay): Discuss the RAG hallucination problem in the medical setting; the
+% sensitivity and regulatory posture of professional corpora such as ChatDoctor; and
+% the risk of \emph{white-box} or embedding-based extraction attacks when dense
+% retrievers expose patient-like text in vector form.
 
 \section{Methodology}
 

@@ -2,7 +2,7 @@
 **Course:** Privacy-Preserving Methods for Data Science
 **Project:** Evaluating Central vs. Local Differential Privacy for Vector Embeddings in Medical RAG Systems
 **Team:** Victor Okoroafor, Ifeanyi Omonigho Odugo, Gopal Krishna, Niramay Roopesh Kolalle
-**Last updated:** 2026-05-11
+**Last updated:** 2026-05-15
 
 ---
 
@@ -18,7 +18,7 @@ without reading the guardrails at the bottom of this document.
 
 ---
 
-## Current Completion: ~55%
+## Current Completion: ~70%
 
 | Component | Status |
 |---|---|
@@ -29,14 +29,14 @@ without reading the guardrails at the bottom of this document.
 | BERTScore utility | ✅ Complete |
 | Experiment orchestration | ✅ Complete with baseline, seeds, logging, corpus cap |
 | Plotting engine | ✅ Complete, reads long-format CSV |
-| Test suite (5 tests) | ✅ All passing |
+| Test suite (10 tests) | ✅ All passing |
 | Manuscript skeleton | ✅ Scaffolded — Methodology and Evaluation Framework have real content |
 | Data loader (ChatDoctor field mapping) | ✅ Fixed and verified — 112,165 rows load correctly |
 | **Single-realisation results.csv** | ✅ Generated — 9 rows, real data |
 | **Three baseline figures** | ✅ Generated — utility, MIA, inversion |
-| **Multiple realisations + error bars** | ❌ Sprint 1 |
-| **Metric DP (third mechanism)** | ❌ Sprint 2 |
-| **Stronger inversion attack** | ❌ Sprint 3 |
+| **Multiple realisations + error bars** | ✅ Implemented — rerun experiments for final CSV |
+| **Metric DP (third mechanism)** | ✅ Implemented — rerun experiments for final CSV |
+| **Stronger inversion attack** | ✅ Implemented — rerun experiments for final CSV |
 | **Results section** | ❌ Sprint 4 |
 | **Discussion section** | ❌ Sprint 4 |
 | **Abstract (final)** | ❌ Sprint 4 |
@@ -111,7 +111,7 @@ is the standard response. Bollegala et al. (2025) explicitly run multiple
 realisations for this reason.
 
 ### TICKET S1-A — Multi-realisation experiment loop
-**Assignee:** _______________
+**Status:** ✅ Implemented in `scripts/run_experiments.py`
 **Effort:** Medium — 1–2 hours of coding, ~5 hours of compute
 
 **What to implement in `scripts/run_experiments.py`:**
@@ -136,16 +136,16 @@ for run_id in range(N_RUNS):
 
 Also add `"run_id": 0` to the baseline row (baseline is deterministic, run once).
 
-The results.csv schema gains one column: `run_id`. Rows grow from 9 to 45
-(1 baseline + 4 epsilon × 2 mechanisms × 5 runs).
+The results.csv schema gains one column: `run_id`. Rows grow from 9 to 41
+(1 deterministic baseline + 4 epsilon × 2 mechanisms × 5 runs).
 
-**Verification:** After running, confirm `data/results.csv` has 45 rows and
-that the `run_id` column contains values 0–4.
+**Verification:** After running, confirm `data/results.csv` has 41 rows and
+that the DP rows have `run_id` values 0–4. The baseline row uses `run_id = 0`.
 
 ---
 
 ### TICKET S1-B — Error band plots
-**Assignee:** _______________
+**Status:** ✅ Implemented in `scripts/plot_results.py`
 **Effort:** Small — 1 hour
 
 **What to implement in `scripts/plot_results.py`:**
@@ -198,7 +198,7 @@ meaning our three-way comparison is a novel result regardless of what the
 numbers show.
 
 ### TICKET S2-A — Implement MetricDPMechanism
-**Assignee:** _______________
+**Status:** ✅ Implemented in `src/models/metric_dp.py`
 **Effort:** Large — 3–4 hours
 
 **Create `src/models/metric_dp.py`** with the following class:
@@ -304,7 +304,7 @@ on CPU — expect 10–20 minutes per epsilon value. Use `k=20` if too slow.
 ---
 
 ### TICKET S2-B — Integrate MetricDP into experiment loop
-**Assignee:** _______________
+**Status:** ✅ Implemented in `scripts/run_experiments.py`
 **Effort:** Small — 30 minutes
 **Dependency:** S2-A must be complete first.
 
@@ -337,8 +337,12 @@ rows.append({"run_id": run_id, "epsilon": eps, "mechanism": "Metric", **metric_m
 log.info("Evaluation finished | epsilon=%s | mechanism=Metric", eps)
 ```
 
-results.csv grows from 45 rows to 65 rows
-(1 baseline + 4 epsilon × 3 mechanisms × 5 runs).
+results.csv grows from 41 rows to 61 rows
+(1 deterministic baseline + 4 epsilon × 3 mechanisms × 5 runs).
+
+Note: the original Sprint 2 note said 65 rows, but that assumes repeating the
+baseline 5 times. This implementation keeps Sprint 1 behavior: the deterministic
+baseline is evaluated once, so the expected row count is 61.
 
 The plotting script requires no changes — it handles arbitrary mechanisms.
 
@@ -350,7 +354,8 @@ closing the gap to Vec2Text and strengthening privacy claims.
 **Depends on:** Sprint 0 (can run in parallel with Sprint 2)
 **Blocks:** Sprint 4 Discussion
 **Files touched:** `src/evaluation/inversion_probe.py` (new),
-`scripts/run_experiments.py`
+`scripts/run_experiments.py`, `scripts/plot_results.py`,
+`tests/test_inversion_probe.py` (new)
 
 ### Why this is needed
 Morris et al. (2023) show that Vec2Text reconstructs 89% of patient names and
@@ -367,7 +372,7 @@ From the Limitations section already in main.tex:
 Sprint 3 partially addresses this acknowledged limitation.
 
 ### TICKET S3-A — Implement linear probe inversion
-**Assignee:** _______________
+**Status:** ✅ Implemented in `src/evaluation/inversion_probe.py`
 **Effort:** Medium — 2–3 hours
 
 **Create `src/evaluation/inversion_probe.py`**:
@@ -454,7 +459,7 @@ class LinearProbeInversion:
 ```
 
 ### TICKET S3-B — Integrate probe into experiment loop
-**Assignee:** _______________
+**Status:** ✅ Implemented in `scripts/run_experiments.py` and `scripts/plot_results.py`
 **Effort:** Small — 30 minutes
 **Dependency:** S3-A must be complete first.
 
@@ -489,6 +494,22 @@ _lineplot_save(
     title="Linear Probe Inversion Fidelity under DP",
     out_name="probe_inversion_vs_epsilon.png",
 )
+```
+
+
+**Implemented output schema:** Sprint 3 adds `probe_rouge_l_mean` to
+`data/results.csv`, so the expected full Sprint 3 CSV has 61 rows and 9 columns
+when using the deterministic one-row baseline convention:
+
+```text
+run_id, epsilon, mechanism, tpr_mia, inversion_rouge_l_mean,
+probe_rouge_l_mean, bert_precision, bert_recall, bert_f1
+```
+
+The plotting script now emits one additional figure:
+
+```text
+docs/figures/probe_inversion_vs_epsilon.png
 ```
 
 ---
