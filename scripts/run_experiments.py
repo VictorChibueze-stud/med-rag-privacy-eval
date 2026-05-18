@@ -8,6 +8,7 @@ Run from the repository root, e.g.:
 from __future__ import annotations
 
 import logging
+import random
 import sys
 import time
 from pathlib import Path
@@ -35,11 +36,24 @@ from sklearn.model_selection import train_test_split
 
 from src.data_loader import ChatDoctorLoader
 from src.evaluation.inversion import EmbeddingInversion
+from src.evaluation.inversion_probe import LinearProbeInversion
 from src.evaluation.mia_lira import LiRAMembershipInference
 from src.evaluation.utility import UtilityEvaluator
 from src.models.central_dp import CentralDPMechanism
 from src.models.local_dp import LocalDPProjector
+from src.models.metric_dp import MetricDPMechanism
 from src.models.rag_baseline import RAGBaseline
+
+# Sprint 1: repeat the stochastic DP mechanisms to estimate mean ± std curves.
+N_RUNS = 5
+EPSILONS = [0.1, 1.0, 5.0, 10.0]
+
+
+def _seed_everything(seed: int) -> None:
+    """Reset all RNGs used by this script for one reproducible realization."""
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
 
 
 def _encode_corpus(model: RAGBaseline, texts: list[str], label: str) -> np.ndarray:
@@ -61,6 +75,7 @@ def _eval_mechanism(
     sample_i: np.ndarray,
     lira: LiRAMembershipInference,
     inv: EmbeddingInversion,
+    probe: LinearProbeInversion,
     util: UtilityEvaluator,
     label: str,
 ) -> dict[str, float]:
@@ -73,25 +88,34 @@ def _eval_mechanism(
         sample_i: Row indices to use for ROUGE-L inversion (fixed 100-sample subset).
         lira: Trained ``LiRAMembershipInference`` instance.
         inv: Built ``EmbeddingInversion`` index.
+        probe: Fitted ``LinearProbeInversion`` attack.
         util: ``UtilityEvaluator`` instance.
 
     Returns:
         Dict with keys ``tpr_mia``, ``inversion_rouge_l_mean``,
-        ``bert_precision``, ``bert_recall``, ``bert_f1``.
+        ``probe_rouge_l_mean``, ``bert_precision``, ``bert_recall``, ``bert_f1``.
     """
     tpr = lira.evaluate_tpr_at_fpr(
         np.asarray(embs, dtype=np.float64), target_labels, 0.001
     )
 
     rouge_scores = []
+    probe_scores = []
     for j in sample_i:
         rc = inv.nearest_neighbor_lookup(embs[j], orig_by_row[j])
         rouge_scores.append(float(rc["rouge_l_fmeasure"]))
+
+        ps = probe.score(embs[j], orig_by_row[j])
+        probe_scores.append(float(ps["rouge_l_fmeasure"]))
+
     mean_rouge = float(np.mean(rouge_scores)) if rouge_scores else 0.0
+    mean_probe_rouge = float(np.mean(probe_scores)) if probe_scores else 0.0
 
     cands, refs = [], []
     for j in range(embs.shape[0]):
-        cands.append(inv.nearest_neighbor_lookup(embs[j], orig_by_row[j])["retrieved_text"])
+        cands.append(
+            inv.nearest_neighbor_lookup(embs[j], orig_by_row[j])["retrieved_text"]
+        )
         refs.append(orig_by_row[j])
     log.info("BERTScore starting — this may take several minutes on CPU | %s", label)
     bs = util.compute_bertscore(references=refs, candidates=cands)
@@ -100,6 +124,7 @@ def _eval_mechanism(
     return {
         "tpr_mia": tpr,
         "inversion_rouge_l_mean": mean_rouge,
+        "probe_rouge_l_mean": mean_probe_rouge,
         "bert_precision": bs["precision"],
         "bert_recall": bs["recall"],
         "bert_f1": bs["f1"],
@@ -109,9 +134,8 @@ def _eval_mechanism(
 def main() -> None:
     """70/30 target vs. shadow, LiRA, inversion ROUGE, and BERTScore utility by ε."""
     start_time = time.time()
-    # Global seeds for full reproducibility of noise draws, not just data splits.
-    np.random.seed(0)
-    torch.manual_seed(0)
+    # Global seeds for deterministic setup before per-run stochastic DP draws.
+    _seed_everything(0)
 
     log.info("Experiment script starting")
     loader = ChatDoctorLoader("data")
@@ -121,11 +145,13 @@ def main() -> None:
     # Cap corpus size for CPU-feasible runtime; sufficient for stable LiRA statistics
     MAX_CORPUS = 5000
     if len(all_texts) > MAX_CORPUS:
-        import random
-
-        random.seed(42)
-        all_texts = random.sample(all_texts, MAX_CORPUS)
-    log.info("Corpus ready | texts_after_cap=%d | max_corpus=%d", len(all_texts), MAX_CORPUS)
+        rng = random.Random(42)
+        all_texts = rng.sample(all_texts, MAX_CORPUS)
+    log.info(
+        "Corpus ready | texts_after_cap=%d | max_corpus=%d",
+        len(all_texts),
+        MAX_CORPUS,
+    )
     n = len(all_texts)
     if n < 4:
         msg = f"Need at least 4 lines for MIA splits; got {n}."
@@ -181,7 +207,14 @@ def main() -> None:
     inv = EmbeddingInversion(
         line_texts, np.ascontiguousarray(all_clean, dtype=np.float32)
     )
-    log.info("Loading BERTScore model (roberta-large) — one-time load, this may take a few minutes")
+    log.info("Fitting linear probe inversion attack on clean corpus")
+    probe = LinearProbeInversion(max_features=2000, top_k_tokens=20)
+    probe.fit(line_texts, np.ascontiguousarray(all_clean, dtype=np.float32))
+    log.info("Linear probe fitting complete")
+    log.info(
+        "Loading BERTScore model (roberta-large) — "
+        "one-time load, this may take a few minutes"
+    )
     util = UtilityEvaluator()
 
     rows: list[dict[str, float | str]] = []
@@ -196,57 +229,140 @@ def main() -> None:
         sample_i,
         lira,
         inv,
+        probe,
         util,
         "Baseline",
     )
-    rows.append({"epsilon": float("inf"), "mechanism": "Baseline", **baseline_metrics})
+    rows.append(
+        {
+            "run_id": 0,
+            "epsilon": float("inf"),
+            "mechanism": "Baseline",
+            **baseline_metrics,
+        }
+    )
     log.info("Baseline evaluation finished")
 
-    # --- Privacy sweep ---
-    epsilons = [0.1, 1.0, 5.0, 10.0]
+    # --- Privacy sweep: multiple stochastic realizations per mechanism/epsilon. ---
+    for run_id in range(N_RUNS):
+        _seed_everything(run_id)
+        log.info("Starting DP realization | run=%d/%d", run_id + 1, N_RUNS)
 
-    for eps in epsilons:
-        # Central DP
-        log.info("Evaluation starting | epsilon=%s | mechanism=Central", eps)
-        central = CentralDPMechanism(epsilon=float(eps), delta=1e-5)
-        noisy_c = np.asarray(
-            central.apply_noise(np.asarray(target_embs, dtype=np.float64)),
-            dtype=np.float32,
-        )
-        central_metrics = _eval_mechanism(
-            noisy_c,
-            target_labels,
-            orig_by_row,
-            sample_i,
-            lira,
-            inv,
-            util,
-            f"epsilon={eps} mechanism=Central",
-        )
-        rows.append({"epsilon": eps, "mechanism": "Central", **central_metrics})
-        log.info("Evaluation finished | epsilon=%s | mechanism=Central", eps)
+        for eps in EPSILONS:
+            # Central DP
+            log.info(
+                "Evaluation starting | run_id=%d | epsilon=%s | mechanism=Central",
+                run_id,
+                eps,
+            )
+            central = CentralDPMechanism(epsilon=float(eps), delta=1e-5)
+            noisy_c = np.asarray(
+                central.apply_noise(np.asarray(target_embs, dtype=np.float64)),
+                dtype=np.float32,
+            )
+            central_metrics = _eval_mechanism(
+                noisy_c,
+                target_labels,
+                orig_by_row,
+                sample_i,
+                lira,
+                inv,
+                probe,
+                util,
+                f"run_id={run_id} epsilon={eps} mechanism=Central",
+            )
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "epsilon": eps,
+                    "mechanism": "Central",
+                    **central_metrics,
+                }
+            )
+            log.info(
+                "Evaluation finished | run_id=%d | epsilon=%s | mechanism=Central",
+                run_id,
+                eps,
+            )
 
-        # Local DP
-        log.info("Evaluation starting | epsilon=%s | mechanism=Local", eps)
-        local = LocalDPProjector(
-            input_dim=384, bottleneck_dim=16, epsilon=float(eps), delta=1e-5
-        )
-        local.eval()
-        with torch.no_grad():
-            t_in = torch.from_numpy(np.ascontiguousarray(target_embs, dtype=np.float32))
-            noisy_l = local(t_in).numpy().astype(np.float32)
-        local_metrics = _eval_mechanism(
-            noisy_l,
-            target_labels,
-            orig_by_row,
-            sample_i,
-            lira,
-            inv,
-            util,
-            f"epsilon={eps} mechanism=Local",
-        )
-        rows.append({"epsilon": eps, "mechanism": "Local", **local_metrics})
-        log.info("Evaluation finished | epsilon=%s | mechanism=Local", eps)
+            # Local DP
+            log.info(
+                "Evaluation starting | run_id=%d | epsilon=%s | mechanism=Local",
+                run_id,
+                eps,
+            )
+            local = LocalDPProjector(
+                input_dim=384, bottleneck_dim=16, epsilon=float(eps), delta=1e-5
+            )
+            local.eval()
+            with torch.no_grad():
+                t_in = torch.from_numpy(
+                    np.ascontiguousarray(target_embs, dtype=np.float32)
+                )
+                noisy_l = local(t_in).numpy().astype(np.float32)
+            local_metrics = _eval_mechanism(
+                noisy_l,
+                target_labels,
+                orig_by_row,
+                sample_i,
+                lira,
+                inv,
+                probe,
+                util,
+                f"run_id={run_id} epsilon={eps} mechanism=Local",
+            )
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "epsilon": eps,
+                    "mechanism": "Local",
+                    **local_metrics,
+                }
+            )
+            log.info(
+                "Evaluation finished | run_id=%d | epsilon=%s | mechanism=Local",
+                run_id,
+                eps,
+            )
+
+            # Metric DP
+            log.info(
+                "Evaluation starting | run_id=%d | epsilon=%s | mechanism=Metric",
+                run_id,
+                eps,
+            )
+            metric = MetricDPMechanism(epsilon=float(eps), delta=1e-5, k=20)
+            noisy_m = np.asarray(
+                metric.apply_noise(
+                    np.asarray(target_embs, dtype=np.float64),
+                    np.asarray(all_clean, dtype=np.float64),
+                ),
+                dtype=np.float32,
+            )
+            metric_metrics = _eval_mechanism(
+                noisy_m,
+                target_labels,
+                orig_by_row,
+                sample_i,
+                lira,
+                inv,
+                probe,
+                util,
+                f"run_id={run_id} epsilon={eps} mechanism=Metric",
+            )
+            rows.append(
+                {
+                    "run_id": run_id,
+                    "epsilon": eps,
+                    "mechanism": "Metric",
+                    **metric_metrics,
+                }
+            )
+            log.info(
+                "Evaluation finished | run_id=%d | epsilon=%s | mechanism=Metric",
+                run_id,
+                eps,
+            )
 
     out_dir = _ROOT / "data"
     out_dir.mkdir(parents=True, exist_ok=True)
@@ -254,10 +370,12 @@ def main() -> None:
     # Canonical column order.
     df = df[
         [
+            "run_id",
             "epsilon",
             "mechanism",
             "tpr_mia",
             "inversion_rouge_l_mean",
+            "probe_rouge_l_mean",
             "bert_precision",
             "bert_recall",
             "bert_f1",

@@ -1,4 +1,4 @@
-"""Statistical and shape checks for central vs. local DP noise (Sprint 3)."""
+"""Statistical and shape checks for central, local, and metric DP noise."""
 
 import numpy as np
 import torch
@@ -6,6 +6,7 @@ import torch.nn.functional as F
 
 from src.models.central_dp import CentralDPMechanism
 from src.models.local_dp import LocalDPProjector
+from src.models.metric_dp import MetricDPMechanism
 
 
 def _l2_row_normalize(emb: np.ndarray) -> np.ndarray:
@@ -122,3 +123,49 @@ def test_local_dp_antipodal_sensitivity() -> None:
     assert max_dist <= 2.0 + 1e-5, (
         f"Antipodal sensitivity bound violated: {max_dist:.6f} > 2.0"
     )
+
+
+def test_metric_dp_output_shape() -> None:
+    """Metric DP returns an aligned noised matrix for target embeddings."""
+    np.random.seed(0)
+    mech = MetricDPMechanism(epsilon=1.0, delta=1e-5, k=10)
+    corpus = np.random.randn(100, 384).astype(np.float64)
+    corpus = _l2_row_normalize(corpus)
+    targets = corpus[:5]
+
+    out = mech.apply_noise(targets, corpus)
+
+    assert out.shape == targets.shape
+    assert np.isfinite(out).all()
+
+
+def test_metric_dp_changes_with_epsilon() -> None:
+    """Smaller epsilon should produce larger Mahalanobis noise draws on average."""
+    rng = np.random.default_rng(123)
+    corpus = _l2_row_normalize(rng.standard_normal((200, 384)))
+    targets = corpus[:20]
+
+    np.random.seed(999)
+    low_eps = MetricDPMechanism(epsilon=0.5, delta=1e-5, k=20)
+    noisy_low = low_eps.apply_noise(targets, corpus)
+
+    np.random.seed(999)
+    high_eps = MetricDPMechanism(epsilon=5.0, delta=1e-5, k=20)
+    noisy_high = high_eps.apply_noise(targets, corpus)
+
+    low_norm = float(np.linalg.norm(noisy_low - targets))
+    high_norm = float(np.linalg.norm(noisy_high - targets))
+
+    assert low_norm > high_norm
+
+
+def test_metric_dp_validation() -> None:
+    """Metric DP rejects invalid privacy parameters and mismatched dimensions."""
+    with np.testing.assert_raises(ValueError):
+        MetricDPMechanism(epsilon=0.0)
+    with np.testing.assert_raises(ValueError):
+        MetricDPMechanism(epsilon=1.0, k=0)
+
+    mech = MetricDPMechanism(epsilon=1.0, k=2)
+    with np.testing.assert_raises(ValueError):
+        mech.apply_noise(np.zeros((2, 3)), np.zeros((4, 5)))
