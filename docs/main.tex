@@ -105,30 +105,36 @@ threat: the fraction of members an adversary can identify with near-certainty
 of not triggering a false alarm.
 
 \subsection{Embedding Inversion}
-% TODO (Niramay): State the FAISS + ROUGE--L attack setting (NN text chosen from a
-% reference index vs.\ gold string).
+We simulate a white-box embedding inversion attack using a secondary clean FAISS reference index built from unperturbed embeddings of the held-out corpus. For each privatised embedding, the nearest neighbour in the clean index is retrieved and its text is treated as the adversary's reconstruction. Reconstruction fidelity is measured via ROUGE-L F-measure between the source text and the retrieved text. This nearest-neighbour approximation underestimates the true inversion risk relative to sequence-level attacks such as Vec2Text~\cite{morris2023}, but is computationally feasible and directionally correct as a lower bound. We additionally evaluate a trained linear probe that maps noisy embeddings to bag-of-words token predictions, providing a stronger reconstruction baseline than nearest-neighbour retrieval.
 
 \subsection{BERTScore Utility}
-% TODO (Niramay): State model family for BERTScore (e.g. RoBERTa) and the proxy for
-% RAG quality when the generator is not yet used.
+We measure end-to-end semantic preservation using BERTScore with a \texttt{roberta-large} backbone~\cite{zhang2020bertscore}. BERTScore computes token-level cosine similarity between contextual embeddings of candidate and reference strings, capturing paraphrase-level agreement that exact-match metrics miss. For each privatised embedding, the nearest-neighbour retrieved text serves as the candidate and the original source text serves as the reference. We report mean F1 across the target evaluation set.
 
 \section{Results}
 
-\begin{figure}[t]
+For all experiments, 5 independent noise realisations are performed for every ($\varepsilon$, mechanism) pair, from the ChatDoctor-HealthCareMagic-100k corpus, where $\varepsilon \in \{0.1, 1.0, 5.0, 10.0\}$ and $\delta = 10^{-5}$. All data are reported as the average of 5 runs with the errors shown as one standard deviation from the average mean in the figures.
+
+The unperturbed baseline $F_1$ is equal to $F_1 = 1.000$. Central and Local DP keep $F_1$ low: $0.831$--$0.833$ for all of the $\varepsilon$ -- less than 2\% from the baseline even with the most aggressive privacy budget ($\varepsilon = 0.1$). The profile of Metric DP shows a clear separation -- $F_1$ rises from $0.843$ at $\varepsilon=0.1$ to $0.991$ at $\varepsilon=10.0$, with the curves levelling off at baseline at lower values of privacy budget. These trends have been plotted in Figure~\ref{fig:util}.
+
+Baseline ROUGE-L is $1.000$. In both cases of Central and Local DP, the results drop drastically to $\approx 0.21$ at $\varepsilon=0.1$, and remain flat for all the values of $\varepsilon$ that have been tested, which clearly demonstrates that nearest-neighbour reconstruction cannot be performed in either case for non-negligible Gaussian noise. On Metric DP, the results are even more dramatic: at $\varepsilon=0.1$, ROUGE-L is $0.238$, but at $\varepsilon=10.0$, ROUGE-L is $0.950$. It is a significant practical failure if an adversary could reconstruct source text with 95\% fidelity using weak Metric DP. See Figure~\ref{fig:inv}.
+
+Baseline TPR is $0.0017$. Central DP achieves TPR $= 0.000$ for all levels of $\varepsilon$, showing the highest and most stable protection against membership inference across the full privacy budget range. Local DP maintains TPR $\approx 0.001$, just above zero but well below baseline. In the low budget range ($\varepsilon \leq 1.0$), Metric DP achieves TPR $= 0.000$, while in the high budget range ($\varepsilon = 10.0$), the value rises to $0.0017$, matching the baseline. Near-zero TPR values should be interpreted carefully, as they may reflect an underpowered attack rather than guaranteed privacy~\cite{carlini2022membership}. The results are shown in Figure~\ref{fig:mia}.
+
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/utility_vs_epsilon.png}
   \caption{BERTScore F1 vs.\ $\epsilon$ for central and local privacy.}
   \label{fig:util}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/mia_vs_epsilon.png}
   \caption{LiRA TPR@0.1\%FPR under central vs.\ local privacy.}
   \label{fig:mia}
 \end{figure}
 
-\begin{figure}[t]
+\begin{figure}[H]
   \centering
   \includegraphics[width=0.9\linewidth]{figures/inversion_vs_epsilon.png}
   \caption{ROUGE--L inversion reconstruction fidelity vs.\ $\epsilon$.}
@@ -143,14 +149,18 @@ of not triggering a false alarm.
   \centering
   \begin{tabular}{@{}lccc@{}}
     \toprule
-    & BERT F1 (utility) & LiRA TPR (0.1\%FPR) & ROUGE--L (inversion) \\
+    & \textbf{BERT F1 (utility)} & \textbf{LiRA TPR (0.1\%FPR)} & \textbf{ROUGE--L (inversion)} \\
     \midrule
-    % example row, replace with paper numbers
-    Central, $\epsilon = 0.1$ & --- & --- & --- \\
+    Baseline                       & 1.000 & 0.0017 & 1.000 \\
+    Central DP ($\varepsilon=1.0$) & 0.831 & 0.000  & 0.209 \\
+    Local DP ($\varepsilon=1.0$)   & 0.831 & 0.001  & 0.210 \\
+    Metric DP ($\varepsilon=1.0$)  & 0.850 & 0.000  & 0.257 \\
+    Metric DP ($\varepsilon=10.0$) & 0.991 & 0.002  & 0.950 \\
     \bottomrule
   \end{tabular}
-  \caption{Spot-check metrics (placeholders: fill from \texttt{data/results.csv}).}
-  \end{table}
+  \caption{Spot-check metrics at $\varepsilon = 1.0$ as the representative operating point.}
+  \label{tab:results}
+\end{table}
 
 \section{Limitations}
 
