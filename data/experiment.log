@@ -1,275 +1,357 @@
-22:54:30 | INFO | Loading faiss with AVX2 support.
-22:54:30 | INFO | Successfully loaded faiss with AVX2 support.
-22:54:39 | INFO | Experiment script starting
-22:54:39 | INFO | Corpus loaded | texts_before_cap=1000
-22:54:39 | INFO | Corpus ready | texts_after_cap=1000 | max_corpus=5000
-22:54:39 | INFO | Use pytorch device_name: cpu
-22:54:39 | INFO | Load pretrained SentenceTransformer: all-MiniLM-L6-v2
-22:54:42 | INFO | Encoding start | phase=shadow members | texts=150
-22:54:44 | INFO | Encoding finished | phase=shadow members | texts=150
-22:54:44 | INFO | Encoding start | phase=shadow non-members | texts=150
-22:54:45 | INFO | Encoding finished | phase=shadow non-members | texts=150
-22:54:45 | INFO | Encoding start | phase=target members | texts=350
-22:54:47 | INFO | Encoding finished | phase=target members | texts=350
-22:54:47 | INFO | Encoding start | phase=target non-members | texts=350
-22:54:50 | INFO | Encoding finished | phase=target non-members | texts=350
-22:54:50 | INFO | Encoding start | phase=clean reference corpus | texts=1000
-22:54:55 | INFO | Encoding finished | phase=clean reference corpus | texts=1000
-22:54:55 | INFO | LiRA shadow training starting | shadow_models=16
-22:54:55 | INFO | LiRA shadow training finished | shadow_models=16
-22:54:55 | INFO | Using default tokenizer.
-22:54:55 | INFO | Fitting linear probe inversion attack on clean corpus
-22:54:55 | INFO | Using default tokenizer.
-22:54:55 | INFO | Linear probe fitting complete
-22:54:55 | INFO | Loading BERTScore model (roberta-large) — one-time load, this may take a few minutes
-22:54:57 | INFO | Baseline evaluation starting
-22:54:57 | INFO | BERTScore starting — this may take several minutes on CPU | Baseline
-22:55:55 | INFO | BERTScore finished | Baseline
-22:55:55 | INFO | Baseline evaluation finished
-22:55:55 | INFO | Starting DP realization | run=1/5
-22:55:55 | INFO | Evaluation starting | run_id=0 | epsilon=0.1 | mechanism=Central
-22:55:55 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=0.1 mechanism=Central
-22:57:07 | INFO | BERTScore finished | run_id=0 epsilon=0.1 mechanism=Central
-22:57:07 | INFO | Evaluation finished | run_id=0 | epsilon=0.1 | mechanism=Central
-22:57:07 | INFO | Evaluation starting | run_id=0 | epsilon=0.1 | mechanism=Local
-22:57:08 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=0.1 mechanism=Local
-22:58:18 | INFO | BERTScore finished | run_id=0 epsilon=0.1 mechanism=Local
-22:58:18 | INFO | Evaluation finished | run_id=0 | epsilon=0.1 | mechanism=Local
-22:58:18 | INFO | Evaluation starting | run_id=0 | epsilon=0.1 | mechanism=Metric
-22:58:19 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=0.1 mechanism=Metric
-22:59:29 | INFO | BERTScore finished | run_id=0 epsilon=0.1 mechanism=Metric
-22:59:29 | INFO | Evaluation finished | run_id=0 | epsilon=0.1 | mechanism=Metric
-22:59:29 | INFO | Evaluation starting | run_id=0 | epsilon=1.0 | mechanism=Central
-22:59:30 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=1.0 mechanism=Central
-23:00:45 | INFO | BERTScore finished | run_id=0 epsilon=1.0 mechanism=Central
-23:00:45 | INFO | Evaluation finished | run_id=0 | epsilon=1.0 | mechanism=Central
-23:00:45 | INFO | Evaluation starting | run_id=0 | epsilon=1.0 | mechanism=Local
-23:00:45 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=1.0 mechanism=Local
-23:01:55 | INFO | BERTScore finished | run_id=0 epsilon=1.0 mechanism=Local
-23:01:55 | INFO | Evaluation finished | run_id=0 | epsilon=1.0 | mechanism=Local
-23:01:55 | INFO | Evaluation starting | run_id=0 | epsilon=1.0 | mechanism=Metric
-23:01:56 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=1.0 mechanism=Metric
-23:03:04 | INFO | BERTScore finished | run_id=0 epsilon=1.0 mechanism=Metric
-23:03:04 | INFO | Evaluation finished | run_id=0 | epsilon=1.0 | mechanism=Metric
-23:03:04 | INFO | Evaluation starting | run_id=0 | epsilon=5.0 | mechanism=Central
-23:03:04 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=5.0 mechanism=Central
-23:04:14 | INFO | BERTScore finished | run_id=0 epsilon=5.0 mechanism=Central
-23:04:14 | INFO | Evaluation finished | run_id=0 | epsilon=5.0 | mechanism=Central
-23:04:14 | INFO | Evaluation starting | run_id=0 | epsilon=5.0 | mechanism=Local
-23:04:14 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=5.0 mechanism=Local
-23:05:18 | INFO | BERTScore finished | run_id=0 epsilon=5.0 mechanism=Local
-23:05:18 | INFO | Evaluation finished | run_id=0 | epsilon=5.0 | mechanism=Local
-23:05:18 | INFO | Evaluation starting | run_id=0 | epsilon=5.0 | mechanism=Metric
-23:05:20 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=5.0 mechanism=Metric
-23:06:22 | INFO | BERTScore finished | run_id=0 epsilon=5.0 mechanism=Metric
-23:06:22 | INFO | Evaluation finished | run_id=0 | epsilon=5.0 | mechanism=Metric
-23:06:22 | INFO | Evaluation starting | run_id=0 | epsilon=10.0 | mechanism=Central
-23:06:23 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=10.0 mechanism=Central
-23:07:28 | INFO | BERTScore finished | run_id=0 epsilon=10.0 mechanism=Central
-23:07:28 | INFO | Evaluation finished | run_id=0 | epsilon=10.0 | mechanism=Central
-23:07:28 | INFO | Evaluation starting | run_id=0 | epsilon=10.0 | mechanism=Local
-23:07:29 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=10.0 mechanism=Local
-23:08:32 | INFO | BERTScore finished | run_id=0 epsilon=10.0 mechanism=Local
-23:08:32 | INFO | Evaluation finished | run_id=0 | epsilon=10.0 | mechanism=Local
-23:08:32 | INFO | Evaluation starting | run_id=0 | epsilon=10.0 | mechanism=Metric
-23:08:34 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=10.0 mechanism=Metric
-23:09:38 | INFO | BERTScore finished | run_id=0 epsilon=10.0 mechanism=Metric
-23:09:38 | INFO | Evaluation finished | run_id=0 | epsilon=10.0 | mechanism=Metric
-23:09:38 | INFO | Starting DP realization | run=2/5
-23:09:38 | INFO | Evaluation starting | run_id=1 | epsilon=0.1 | mechanism=Central
-23:09:39 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=0.1 mechanism=Central
-23:10:54 | INFO | BERTScore finished | run_id=1 epsilon=0.1 mechanism=Central
-23:10:54 | INFO | Evaluation finished | run_id=1 | epsilon=0.1 | mechanism=Central
-23:10:54 | INFO | Evaluation starting | run_id=1 | epsilon=0.1 | mechanism=Local
-23:10:55 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=0.1 mechanism=Local
-23:12:03 | INFO | BERTScore finished | run_id=1 epsilon=0.1 mechanism=Local
-23:12:03 | INFO | Evaluation finished | run_id=1 | epsilon=0.1 | mechanism=Local
-23:12:03 | INFO | Evaluation starting | run_id=1 | epsilon=0.1 | mechanism=Metric
-23:12:05 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=0.1 mechanism=Metric
-23:13:18 | INFO | BERTScore finished | run_id=1 epsilon=0.1 mechanism=Metric
-23:13:18 | INFO | Evaluation finished | run_id=1 | epsilon=0.1 | mechanism=Metric
-23:13:18 | INFO | Evaluation starting | run_id=1 | epsilon=1.0 | mechanism=Central
-23:13:19 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=1.0 mechanism=Central
-23:14:27 | INFO | BERTScore finished | run_id=1 epsilon=1.0 mechanism=Central
-23:14:27 | INFO | Evaluation finished | run_id=1 | epsilon=1.0 | mechanism=Central
-23:14:27 | INFO | Evaluation starting | run_id=1 | epsilon=1.0 | mechanism=Local
-23:14:28 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=1.0 mechanism=Local
-23:15:40 | INFO | BERTScore finished | run_id=1 epsilon=1.0 mechanism=Local
-23:15:40 | INFO | Evaluation finished | run_id=1 | epsilon=1.0 | mechanism=Local
-23:15:40 | INFO | Evaluation starting | run_id=1 | epsilon=1.0 | mechanism=Metric
-23:15:42 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=1.0 mechanism=Metric
-23:16:59 | INFO | BERTScore finished | run_id=1 epsilon=1.0 mechanism=Metric
-23:16:59 | INFO | Evaluation finished | run_id=1 | epsilon=1.0 | mechanism=Metric
-23:16:59 | INFO | Evaluation starting | run_id=1 | epsilon=5.0 | mechanism=Central
-23:17:00 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=5.0 mechanism=Central
-23:18:16 | INFO | BERTScore finished | run_id=1 epsilon=5.0 mechanism=Central
-23:18:16 | INFO | Evaluation finished | run_id=1 | epsilon=5.0 | mechanism=Central
-23:18:16 | INFO | Evaluation starting | run_id=1 | epsilon=5.0 | mechanism=Local
-23:18:17 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=5.0 mechanism=Local
-23:19:29 | INFO | BERTScore finished | run_id=1 epsilon=5.0 mechanism=Local
-23:19:29 | INFO | Evaluation finished | run_id=1 | epsilon=5.0 | mechanism=Local
-23:19:29 | INFO | Evaluation starting | run_id=1 | epsilon=5.0 | mechanism=Metric
-23:19:31 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=5.0 mechanism=Metric
-23:20:45 | INFO | BERTScore finished | run_id=1 epsilon=5.0 mechanism=Metric
-23:20:45 | INFO | Evaluation finished | run_id=1 | epsilon=5.0 | mechanism=Metric
-23:20:45 | INFO | Evaluation starting | run_id=1 | epsilon=10.0 | mechanism=Central
-23:20:46 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=10.0 mechanism=Central
-23:22:03 | INFO | BERTScore finished | run_id=1 epsilon=10.0 mechanism=Central
-23:22:03 | INFO | Evaluation finished | run_id=1 | epsilon=10.0 | mechanism=Central
-23:22:03 | INFO | Evaluation starting | run_id=1 | epsilon=10.0 | mechanism=Local
-23:22:04 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=10.0 mechanism=Local
-23:23:16 | INFO | BERTScore finished | run_id=1 epsilon=10.0 mechanism=Local
-23:23:16 | INFO | Evaluation finished | run_id=1 | epsilon=10.0 | mechanism=Local
-23:23:16 | INFO | Evaluation starting | run_id=1 | epsilon=10.0 | mechanism=Metric
-23:23:17 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=10.0 mechanism=Metric
-23:24:24 | INFO | BERTScore finished | run_id=1 epsilon=10.0 mechanism=Metric
-23:24:24 | INFO | Evaluation finished | run_id=1 | epsilon=10.0 | mechanism=Metric
-23:24:24 | INFO | Starting DP realization | run=3/5
-23:24:24 | INFO | Evaluation starting | run_id=2 | epsilon=0.1 | mechanism=Central
-23:24:25 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=0.1 mechanism=Central
-23:25:42 | INFO | BERTScore finished | run_id=2 epsilon=0.1 mechanism=Central
-23:25:42 | INFO | Evaluation finished | run_id=2 | epsilon=0.1 | mechanism=Central
-23:25:42 | INFO | Evaluation starting | run_id=2 | epsilon=0.1 | mechanism=Local
-23:25:43 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=0.1 mechanism=Local
-23:26:57 | INFO | BERTScore finished | run_id=2 epsilon=0.1 mechanism=Local
-23:26:57 | INFO | Evaluation finished | run_id=2 | epsilon=0.1 | mechanism=Local
-23:26:57 | INFO | Evaluation starting | run_id=2 | epsilon=0.1 | mechanism=Metric
-23:26:58 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=0.1 mechanism=Metric
-23:28:12 | INFO | BERTScore finished | run_id=2 epsilon=0.1 mechanism=Metric
-23:28:12 | INFO | Evaluation finished | run_id=2 | epsilon=0.1 | mechanism=Metric
-23:28:12 | INFO | Evaluation starting | run_id=2 | epsilon=1.0 | mechanism=Central
-23:28:12 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=1.0 mechanism=Central
-23:29:30 | INFO | BERTScore finished | run_id=2 epsilon=1.0 mechanism=Central
-23:29:30 | INFO | Evaluation finished | run_id=2 | epsilon=1.0 | mechanism=Central
-23:29:30 | INFO | Evaluation starting | run_id=2 | epsilon=1.0 | mechanism=Local
-23:29:30 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=1.0 mechanism=Local
-23:30:42 | INFO | BERTScore finished | run_id=2 epsilon=1.0 mechanism=Local
-23:30:42 | INFO | Evaluation finished | run_id=2 | epsilon=1.0 | mechanism=Local
-23:30:42 | INFO | Evaluation starting | run_id=2 | epsilon=1.0 | mechanism=Metric
-23:30:44 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=1.0 mechanism=Metric
-23:32:00 | INFO | BERTScore finished | run_id=2 epsilon=1.0 mechanism=Metric
-23:32:00 | INFO | Evaluation finished | run_id=2 | epsilon=1.0 | mechanism=Metric
-23:32:00 | INFO | Evaluation starting | run_id=2 | epsilon=5.0 | mechanism=Central
-23:32:00 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=5.0 mechanism=Central
-23:33:18 | INFO | BERTScore finished | run_id=2 epsilon=5.0 mechanism=Central
-23:33:18 | INFO | Evaluation finished | run_id=2 | epsilon=5.0 | mechanism=Central
-23:33:18 | INFO | Evaluation starting | run_id=2 | epsilon=5.0 | mechanism=Local
-23:33:19 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=5.0 mechanism=Local
-23:34:32 | INFO | BERTScore finished | run_id=2 epsilon=5.0 mechanism=Local
-23:34:32 | INFO | Evaluation finished | run_id=2 | epsilon=5.0 | mechanism=Local
-23:34:32 | INFO | Evaluation starting | run_id=2 | epsilon=5.0 | mechanism=Metric
-23:34:34 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=5.0 mechanism=Metric
-23:35:48 | INFO | BERTScore finished | run_id=2 epsilon=5.0 mechanism=Metric
-23:35:48 | INFO | Evaluation finished | run_id=2 | epsilon=5.0 | mechanism=Metric
-23:35:48 | INFO | Evaluation starting | run_id=2 | epsilon=10.0 | mechanism=Central
-23:35:48 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=10.0 mechanism=Central
-23:37:05 | INFO | BERTScore finished | run_id=2 epsilon=10.0 mechanism=Central
-23:37:05 | INFO | Evaluation finished | run_id=2 | epsilon=10.0 | mechanism=Central
-23:37:05 | INFO | Evaluation starting | run_id=2 | epsilon=10.0 | mechanism=Local
-23:37:06 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=10.0 mechanism=Local
-23:38:19 | INFO | BERTScore finished | run_id=2 epsilon=10.0 mechanism=Local
-23:38:19 | INFO | Evaluation finished | run_id=2 | epsilon=10.0 | mechanism=Local
-23:38:19 | INFO | Evaluation starting | run_id=2 | epsilon=10.0 | mechanism=Metric
-23:38:21 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=10.0 mechanism=Metric
-23:39:26 | INFO | BERTScore finished | run_id=2 epsilon=10.0 mechanism=Metric
-23:39:26 | INFO | Evaluation finished | run_id=2 | epsilon=10.0 | mechanism=Metric
-23:39:26 | INFO | Starting DP realization | run=4/5
-23:39:26 | INFO | Evaluation starting | run_id=3 | epsilon=0.1 | mechanism=Central
-23:39:27 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=0.1 mechanism=Central
-23:40:44 | INFO | BERTScore finished | run_id=3 epsilon=0.1 mechanism=Central
-23:40:44 | INFO | Evaluation finished | run_id=3 | epsilon=0.1 | mechanism=Central
-23:40:44 | INFO | Evaluation starting | run_id=3 | epsilon=0.1 | mechanism=Local
-23:40:45 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=0.1 mechanism=Local
-23:41:58 | INFO | BERTScore finished | run_id=3 epsilon=0.1 mechanism=Local
-23:41:58 | INFO | Evaluation finished | run_id=3 | epsilon=0.1 | mechanism=Local
-23:41:58 | INFO | Evaluation starting | run_id=3 | epsilon=0.1 | mechanism=Metric
-23:42:00 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=0.1 mechanism=Metric
-23:43:14 | INFO | BERTScore finished | run_id=3 epsilon=0.1 mechanism=Metric
-23:43:14 | INFO | Evaluation finished | run_id=3 | epsilon=0.1 | mechanism=Metric
-23:43:14 | INFO | Evaluation starting | run_id=3 | epsilon=1.0 | mechanism=Central
-23:43:15 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=1.0 mechanism=Central
-23:44:30 | INFO | BERTScore finished | run_id=3 epsilon=1.0 mechanism=Central
-23:44:30 | INFO | Evaluation finished | run_id=3 | epsilon=1.0 | mechanism=Central
-23:44:30 | INFO | Evaluation starting | run_id=3 | epsilon=1.0 | mechanism=Local
-23:44:31 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=1.0 mechanism=Local
-23:45:42 | INFO | BERTScore finished | run_id=3 epsilon=1.0 mechanism=Local
-23:45:42 | INFO | Evaluation finished | run_id=3 | epsilon=1.0 | mechanism=Local
-23:45:42 | INFO | Evaluation starting | run_id=3 | epsilon=1.0 | mechanism=Metric
-23:45:44 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=1.0 mechanism=Metric
-23:47:00 | INFO | BERTScore finished | run_id=3 epsilon=1.0 mechanism=Metric
-23:47:00 | INFO | Evaluation finished | run_id=3 | epsilon=1.0 | mechanism=Metric
-23:47:00 | INFO | Evaluation starting | run_id=3 | epsilon=5.0 | mechanism=Central
-23:47:01 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=5.0 mechanism=Central
-23:48:17 | INFO | BERTScore finished | run_id=3 epsilon=5.0 mechanism=Central
-23:48:17 | INFO | Evaluation finished | run_id=3 | epsilon=5.0 | mechanism=Central
-23:48:17 | INFO | Evaluation starting | run_id=3 | epsilon=5.0 | mechanism=Local
-23:48:18 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=5.0 mechanism=Local
-23:49:29 | INFO | BERTScore finished | run_id=3 epsilon=5.0 mechanism=Local
-23:49:29 | INFO | Evaluation finished | run_id=3 | epsilon=5.0 | mechanism=Local
-23:49:29 | INFO | Evaluation starting | run_id=3 | epsilon=5.0 | mechanism=Metric
-23:49:30 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=5.0 mechanism=Metric
-23:50:45 | INFO | BERTScore finished | run_id=3 epsilon=5.0 mechanism=Metric
-23:50:45 | INFO | Evaluation finished | run_id=3 | epsilon=5.0 | mechanism=Metric
-23:50:45 | INFO | Evaluation starting | run_id=3 | epsilon=10.0 | mechanism=Central
-23:50:46 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=10.0 mechanism=Central
-23:52:01 | INFO | BERTScore finished | run_id=3 epsilon=10.0 mechanism=Central
-23:52:01 | INFO | Evaluation finished | run_id=3 | epsilon=10.0 | mechanism=Central
-23:52:01 | INFO | Evaluation starting | run_id=3 | epsilon=10.0 | mechanism=Local
-23:52:02 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=10.0 mechanism=Local
-23:53:15 | INFO | BERTScore finished | run_id=3 epsilon=10.0 mechanism=Local
-23:53:15 | INFO | Evaluation finished | run_id=3 | epsilon=10.0 | mechanism=Local
-23:53:15 | INFO | Evaluation starting | run_id=3 | epsilon=10.0 | mechanism=Metric
-23:53:16 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=10.0 mechanism=Metric
-23:54:24 | INFO | BERTScore finished | run_id=3 epsilon=10.0 mechanism=Metric
-23:54:24 | INFO | Evaluation finished | run_id=3 | epsilon=10.0 | mechanism=Metric
-23:54:24 | INFO | Starting DP realization | run=5/5
-23:54:24 | INFO | Evaluation starting | run_id=4 | epsilon=0.1 | mechanism=Central
-23:54:25 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=0.1 mechanism=Central
-23:55:41 | INFO | BERTScore finished | run_id=4 epsilon=0.1 mechanism=Central
-23:55:41 | INFO | Evaluation finished | run_id=4 | epsilon=0.1 | mechanism=Central
-23:55:41 | INFO | Evaluation starting | run_id=4 | epsilon=0.1 | mechanism=Local
-23:55:42 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=0.1 mechanism=Local
-23:56:56 | INFO | BERTScore finished | run_id=4 epsilon=0.1 mechanism=Local
-23:56:56 | INFO | Evaluation finished | run_id=4 | epsilon=0.1 | mechanism=Local
-23:56:56 | INFO | Evaluation starting | run_id=4 | epsilon=0.1 | mechanism=Metric
-23:56:58 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=0.1 mechanism=Metric
-23:58:01 | INFO | BERTScore finished | run_id=4 epsilon=0.1 mechanism=Metric
-23:58:01 | INFO | Evaluation finished | run_id=4 | epsilon=0.1 | mechanism=Metric
-23:58:01 | INFO | Evaluation starting | run_id=4 | epsilon=1.0 | mechanism=Central
-23:58:02 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=1.0 mechanism=Central
-23:59:08 | INFO | BERTScore finished | run_id=4 epsilon=1.0 mechanism=Central
-23:59:08 | INFO | Evaluation finished | run_id=4 | epsilon=1.0 | mechanism=Central
-23:59:08 | INFO | Evaluation starting | run_id=4 | epsilon=1.0 | mechanism=Local
-23:59:09 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=1.0 mechanism=Local
-00:00:16 | INFO | BERTScore finished | run_id=4 epsilon=1.0 mechanism=Local
-00:00:16 | INFO | Evaluation finished | run_id=4 | epsilon=1.0 | mechanism=Local
-00:00:16 | INFO | Evaluation starting | run_id=4 | epsilon=1.0 | mechanism=Metric
-00:00:17 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=1.0 mechanism=Metric
-00:01:24 | INFO | BERTScore finished | run_id=4 epsilon=1.0 mechanism=Metric
-00:01:24 | INFO | Evaluation finished | run_id=4 | epsilon=1.0 | mechanism=Metric
-00:01:24 | INFO | Evaluation starting | run_id=4 | epsilon=5.0 | mechanism=Central
-00:01:25 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=5.0 mechanism=Central
-00:02:31 | INFO | BERTScore finished | run_id=4 epsilon=5.0 mechanism=Central
-00:02:31 | INFO | Evaluation finished | run_id=4 | epsilon=5.0 | mechanism=Central
-00:02:31 | INFO | Evaluation starting | run_id=4 | epsilon=5.0 | mechanism=Local
-00:02:31 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=5.0 mechanism=Local
-00:03:34 | INFO | BERTScore finished | run_id=4 epsilon=5.0 mechanism=Local
-00:03:34 | INFO | Evaluation finished | run_id=4 | epsilon=5.0 | mechanism=Local
-00:03:34 | INFO | Evaluation starting | run_id=4 | epsilon=5.0 | mechanism=Metric
-00:03:35 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=5.0 mechanism=Metric
-01:40:13 | INFO | BERTScore finished | run_id=4 epsilon=5.0 mechanism=Metric
-01:40:13 | INFO | Evaluation finished | run_id=4 | epsilon=5.0 | mechanism=Metric
-01:40:13 | INFO | Evaluation starting | run_id=4 | epsilon=10.0 | mechanism=Central
-01:40:14 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=10.0 mechanism=Central
-02:14:59 | INFO | BERTScore finished | run_id=4 epsilon=10.0 mechanism=Central
-02:14:59 | INFO | Evaluation finished | run_id=4 | epsilon=10.0 | mechanism=Central
-02:14:59 | INFO | Evaluation starting | run_id=4 | epsilon=10.0 | mechanism=Local
-02:15:00 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=10.0 mechanism=Local
-02:16:22 | INFO | BERTScore finished | run_id=4 epsilon=10.0 mechanism=Local
-02:16:22 | INFO | Evaluation finished | run_id=4 | epsilon=10.0 | mechanism=Local
-02:16:22 | INFO | Evaluation starting | run_id=4 | epsilon=10.0 | mechanism=Metric
-02:16:23 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=10.0 mechanism=Metric
-02:17:37 | INFO | BERTScore finished | run_id=4 epsilon=10.0 mechanism=Metric
-02:17:37 | INFO | Evaluation finished | run_id=4 | epsilon=10.0 | mechanism=Metric
-02:17:37 | INFO | Results written | path=C:\Users\gopal\Desktop\unibasel_msc_data_science_spring_2026\privacy preserving methods\med-rag-privacy-eval-sprint3-complete\med-rag-privacy-eval-main\data\results.csv | rows=61
-02:17:37 | INFO | Experiment script finished | elapsed=202m 57s
+19:47:49 | INFO | NumExpr defaulting to 2 threads.
+19:47:52 | INFO | Loading faiss with AVX512 support.
+19:47:52 | INFO | Successfully loaded faiss with AVX512 support.
+19:48:05 | INFO | TensorFlow version 2.20.0 available.
+19:48:05 | INFO | JAX version 0.7.2 available.
+19:48:11 | INFO | Experiment script starting
+19:48:11 | INFO | Corpus loaded | texts_before_cap=112165
+19:48:11 | INFO | Corpus ready | texts_after_cap=5000 | max_corpus=5000
+19:48:11 | INFO | No device provided, using cuda:0
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+19:48:12 | WARNING | Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/modules.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/modules.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config_sentence_transformers.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config_sentence_transformers.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | Loading SentenceTransformer model from sentence-transformers/all-MiniLM-L6-v2.
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config_sentence_transformers.json "HTTP/1.1 307 Temporary Redirect"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config_sentence_transformers.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/README.md "HTTP/1.1 307 Temporary Redirect"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/README.md "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/README.md "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/modules.json "HTTP/1.1 307 Temporary Redirect"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/modules.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/sentence_bert_config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/sentence_bert_config.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/sentence_bert_config.json "HTTP/1.1 200 OK"
+19:48:12 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+19:48:13 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:13 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config.json "HTTP/1.1 200 OK"
+19:48:13 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config.json "HTTP/1.1 200 OK"
+19:48:13 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:13 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config.json "HTTP/1.1 200 OK"
+19:48:13 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/model.safetensors "HTTP/1.1 302 Found"
+19:48:13 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/xet-read-token/c9745ed1d9f207416be6d2e6f8de32d1f16199bf "HTTP/1.1 200 OK"
+19:48:14 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/processor_config.json "HTTP/1.1 404 Not Found"
+19:48:14 | INFO | HTTP 06:11:38 | INFO | BERTScore finished | run_id=0 epsilon=10.0 mechanism=Central
+06:11:38 | INFO | Evaluation finished | run_id=0 | epsilon=10.0 | mechanism=Central
+06:11:38 | INFO | Evaluation starting | run_id=0 | epsilon=10.0 | mechanism=Local
+06:12:21 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=10.0 mechanism=Local
+sentence-transformers/all-MiniLM-L6-v2/resolve/main/preprocessor_config.json "HTTP/1.1 404 Not Found"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/tokenizer_config.json "HTTP/1.1 200 OK"
+19:48:15 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/tokenizer_config.json "HTTP/1.1 200 OK"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config.json "HTTP/1.1 200 OK"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/config.json "HTTP/1.1 200 OK"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer_config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:15 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/tokenizer_config.json "HTTP/1.1 200 OK"
+19:48:15 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+19:48:15 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/vocab.txt "HTTP/1.1 307 Temporary Redirect"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/vocab.txt "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/vocab.txt "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/tokenizer.json "HTTP/1.1 307 Temporary Redirect"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/tokenizer.json "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/tokenizer.json "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/added_tokens.json "HTTP/1.1 404 Not Found"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/special_tokens_map.json "HTTP/1.1 307 Temporary Redirect"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/special_tokens_map.json "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/special_tokens_map.json "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/chat_template.jinja "HTTP/1.1 404 Not Found"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/sentence-transformers/all-MiniLM-L6-v2/resolve/main/1_Pooling/config.json "HTTP/1.1 307 Temporary Redirect"
+19:48:16 | INFO | HTTP Request: HEAD https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: GET https://huggingface.co/api/resolve-cache/models/sentence-transformers/all-MiniLM-L6-v2/c9745ed1d9f207416be6d2e6f8de32d1f16199bf/1_Pooling%2Fconfig.json "HTTP/1.1 200 OK"
+19:48:16 | INFO | HTTP Request: GET https://huggingface.co/api/models/sentence-transformers/all-MiniLM-L6-v2 "HTTP/1.1 200 OK"
+19:48:17 | INFO | Encoding start | phase=shadow members | texts=750
+19:48:20 | INFO | Encoding finished | phase=shadow members | texts=750
+19:48:20 | INFO | Encoding start | phase=shadow non-members | texts=750
+19:48:22 | INFO | Encoding finished | phase=shadow non-members | texts=750
+19:48:22 | INFO | Encoding start | phase=target members | texts=1750
+19:48:26 | INFO | Encoding finished | phase=target members | texts=1750
+19:48:26 | INFO | Encoding start | phase=target non-members | texts=1750
+19:48:30 | INFO | Encoding finished | phase=target non-members | texts=1750
+19:48:30 | INFO | Encoding start | phase=clean reference corpus | texts=5000
+19:48:44 | INFO | Encoding finished | phase=clean reference corpus | texts=5000
+19:48:44 | INFO | LiRA shadow training starting | shadow_models=16
+19:48:46 | INFO | LiRA shadow training finished | shadow_models=16
+19:48:46 | INFO | Using default tokenizer.
+19:48:46 | INFO | Fitting linear probe inversion attack on clean corpus
+19:48:46 | INFO | Using default tokenizer.
+19:48:47 | INFO | Linear probe fitting complete
+19:48:47 | INFO | Loading BERTScore model (roberta-large) — one-time load, this may take a few minutes
+19:48:47 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/config.json "HTTP/1.1 200 OK"
+19:48:47 | INFO | HTTP Request: GET https://huggingface.co/roberta-large/resolve/main/config.json "HTTP/1.1 200 OK"
+19:48:47 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/tokenizer_config.json "HTTP/1.1 200 OK"
+19:48:47 | INFO | HTTP Request: GET https://huggingface.co/roberta-large/resolve/main/tokenizer_config.json "HTTP/1.1 200 OK"
+19:48:47 | INFO | HTTP Request: GET https://huggingface.co/api/models/roberta-large/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 307 Temporary Redirect"
+19:48:48 | INFO | HTTP Request: GET https://huggingface.co/api/models/FacebookAI/roberta-large/tree/main/additional_chat_templates?recursive=false&expand=false "HTTP/1.1 404 Not Found"
+19:48:48 | INFO | HTTP Request: GET https://huggingface.co/api/models/roberta-large/tree/main?recursive=true&expand=false "HTTP/1.1 307 Temporary Redirect"
+19:48:48 | INFO | HTTP Request: GET https://huggingface.co/api/models/FacebookAI/roberta-large/tree/main?recursive=true&expand=false "HTTP/1.1 200 OK"
+19:48:48 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/vocab.json "HTTP/1.1 200 OK"
+19:48:48 | INFO | HTTP Request: GET https://huggingface.co/roberta-large/resolve/main/vocab.json "HTTP/1.1 200 OK"
+19:48:48 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/merges.txt "HTTP/1.1 200 OK"
+19:48:48 | INFO | HTTP Request: GET https://huggingface.co/roberta-large/resolve/main/merges.txt "HTTP/1.1 200 OK"
+19:48:49 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/tokenizer.json "HTTP/1.1 200 OK"
+19:48:49 | INFO | HTTP Request: GET https://huggingface.co/roberta-large/resolve/main/tokenizer.json "HTTP/1.1 200 OK"
+19:48:49 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/added_tokens.json "HTTP/1.1 404 Not Found"
+19:48:49 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/special_tokens_map.json "HTTP/1.1 404 Not Found"
+19:48:49 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/chat_template.jinja "HTTP/1.1 404 Not Found"
+19:48:50 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/config.json "HTTP/1.1 200 OK"
+19:48:50 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/adapter_config.json "HTTP/1.1 404 Not Found"
+19:48:50 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/config.json "HTTP/1.1 200 OK"
+19:48:50 | INFO | HTTP Request: HEAD https://huggingface.co/roberta-large/resolve/main/model.safetensors "HTTP/1.1 302 Found"
+19:48:50 | INFO | HTTP Request: GET https://huggingface.co/api/models/FacebookAI/roberta-large/xet-read-token/722cf37b1afa9454edce342e7895e588b6ff1d59 "HTTP/1.1 200 OK"
+19:49:01 | INFO | Baseline evaluation starting
+19:49:59 | INFO | BERTScore starting — this may take several minutes on CPU | Baseline
+19:52:50 | INFO | BERTScore finished | Baseline
+19:52:50 | INFO | Baseline evaluation finished
+19:52:50 | INFO | Starting DP realization | run=1/5
+19:52:50 | INFO | Evaluation starting | run_id=0 | epsilon=0.1 | mechanism=Central
+19:53:43 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=0.1 mechanism=Central
+19:57:12 | INFO | BERTScore finished | run_id=0 epsilon=0.1 mechanism=Central
+19:57:12 | INFO | Evaluation finished | run_id=0 | epsilon=0.1 | mechanism=Central
+19:57:12 | INFO | Evaluation starting | run_id=0 | epsilon=0.1 | mechanism=Local
+19:58:06 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=0.1 mechanism=Local
+20:01:17 | INFO | BERTScore finished | run_id=0 epsilon=0.1 mechanism=Local
+20:01:17 | INFO | Evaluation finished | run_id=0 | epsilon=0.1 | mechanism=Local
+20:01:17 | INFO | Evaluation starting | run_id=0 | epsilon=0.1 | mechanism=Metric
+20:02:25 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=0.1 mechanism=Metric
+20:05:56 | INFO | BERTScore finished | run_id=0 epsilon=0.1 mechanism=Metric
+20:05:56 | INFO | Evaluation finished | run_id=0 | epsilon=0.1 | mechanism=Metric
+20:05:56 | INFO | Evaluation starting | run_id=0 | epsilon=1.0 | mechanism=Central
+20:06:49 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=1.0 mechanism=Central
+20:10:20 | INFO | BERTScore finished | run_id=0 epsilon=1.0 mechanism=Central
+20:10:20 | INFO | Evaluation finished | run_id=0 | epsilon=1.0 | mechanism=Central
+20:10:20 | INFO | Evaluation starting | run_id=0 | epsilon=1.0 | mechanism=Local
+20:11:14 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=1.0 mechanism=Local
+20:14:23 | INFO | BERTScore finished | run_id=0 epsilon=1.0 mechanism=Local
+20:14:23 | INFO | Evaluation finished | run_id=0 | epsilon=1.0 | mechanism=Local
+20:14:23 | INFO | Evaluation starting | run_id=0 | epsilon=1.0 | mechanism=Metric
+20:15:31 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=1.0 mechanism=Metric
+20:19:02 | INFO | BERTScore finished | run_id=0 epsilon=1.0 mechanism=Metric
+20:19:02 | INFO | Evaluation finished | run_id=0 | epsilon=1.0 | mechanism=Metric
+20:19:02 | INFO | Evaluation starting | run_id=0 | epsilon=5.0 | mechanism=Central
+20:19:55 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=5.0 mechanism=Central
+20:23:24 | INFO | BERTScore finished | run_id=0 epsilon=5.0 mechanism=Central
+20:23:24 | INFO | Evaluation finished | run_id=0 | epsilon=5.0 | mechanism=Central
+20:23:24 | INFO | Evaluation starting | run_id=0 | epsilon=5.0 | mechanism=Local
+20:24:17 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=5.0 mechanism=Local
+20:27:29 | INFO | BERTScore finished | run_id=0 epsilon=5.0 mechanism=Local
+20:27:29 | INFO | Evaluation finished | run_id=0 | epsilon=5.0 | mechanism=Local
+20:27:29 | INFO | Evaluation starting | run_id=0 | epsilon=5.0 | mechanism=Metric
+20:28:38 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=5.0 mechanism=Metric
+20:31:57 | INFO | BERTScore finished | run_id=0 epsilon=5.0 mechanism=Metric
+20:31:57 | INFO | Evaluation finished | run_id=0 | epsilon=5.0 | mechanism=Metric
+20:31:57 | INFO | Evaluation starting | run_id=0 | epsilon=10.0 | mechanism=Central
+20:32:50 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=10.0 mechanism=Central
+20:36:21 | INFO | BERTScore finished | run_id=0 epsilon=10.0 mechanism=Central
+20:36:21 | INFO | Evaluation finished | run_id=0 | epsilon=10.0 | mechanism=Central
+20:36:21 | INFO | Evaluation starting | run_id=0 | epsilon=10.0 | mechanism=Local
+20:37:13 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=10.0 mechanism=Local
+20:40:22 | INFO | BERTScore finished | run_id=0 epsilon=10.0 mechanism=Local
+20:40:22 | INFO | Evaluation finished | run_id=0 | epsilon=10.0 | mechanism=Local
+20:40:22 | INFO | Evaluation starting | run_id=0 | epsilon=10.0 | mechanism=Metric
+20:41:33 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=0 epsilon=10.0 mechanism=Metric
+20:44:32 | INFO | BERTScore finished | run_id=0 epsilon=10.0 mechanism=Metric
+20:44:32 | INFO | Evaluation finished | run_id=0 | epsilon=10.0 | mechanism=Metric
+20:44:32 | INFO | Starting DP realization | run=2/5
+20:44:32 | INFO | Evaluation starting | run_id=1 | epsilon=0.1 | mechanism=Central
+20:45:26 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=0.1 mechanism=Central
+20:48:53 | INFO | BERTScore finished | run_id=1 epsilon=0.1 mechanism=Central
+20:48:53 | INFO | Evaluation finished | run_id=1 | epsilon=0.1 | mechanism=Central
+20:48:53 | INFO | Evaluation starting | run_id=1 | epsilon=0.1 | mechanism=Local
+20:49:47 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=0.1 mechanism=Local
+20:52:58 | INFO | BERTScore finished | run_id=1 epsilon=0.1 mechanism=Local
+20:52:58 | INFO | Evaluation finished | run_id=1 | epsilon=0.1 | mechanism=Local
+20:52:58 | INFO | Evaluation starting | run_id=1 | epsilon=0.1 | mechanism=Metric
+20:54:09 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=0.1 mechanism=Metric
+20:57:39 | INFO | BERTScore finished | run_id=1 epsilon=0.1 mechanism=Metric
+20:57:39 | INFO | Evaluation finished | run_id=1 | epsilon=0.1 | mechanism=Metric
+20:57:39 | INFO | Evaluation starting | run_id=1 | epsilon=1.0 | mechanism=Central
+20:58:33 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=1.0 mechanism=Central
+21:02:01 | INFO | BERTScore finished | run_id=1 epsilon=1.0 mechanism=Central
+21:02:01 | INFO | Evaluation finished | run_id=1 | epsilon=1.0 | mechanism=Central
+21:02:01 | INFO | Evaluation starting | run_id=1 | epsilon=1.0 | mechanism=Local
+21:02:53 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=1.0 mechanism=Local
+21:06:04 | INFO | BERTScore finished | run_id=1 epsilon=1.0 mechanism=Local
+21:06:04 | INFO | Evaluation finished | run_id=1 | epsilon=1.0 | mechanism=Local
+21:06:04 | INFO | Evaluation starting | run_id=1 | epsilon=1.0 | mechanism=Metric
+21:07:12 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=1.0 mechanism=Metric
+21:10:41 | INFO | BERTScore finished | run_id=1 epsilon=1.0 mechanism=Metric
+21:10:41 | INFO | Evaluation finished | run_id=1 | epsilon=1.0 | mechanism=Metric
+21:10:41 | INFO | Evaluation starting | run_id=1 | epsilon=5.0 | mechanism=Central
+21:11:35 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=5.0 mechanism=Central
+21:15:03 | INFO | BERTScore finished | run_id=1 epsilon=5.0 mechanism=Central
+21:15:03 | INFO | Evaluation finished | run_id=1 | epsilon=5.0 | mechanism=Central
+21:15:03 | INFO | Evaluation starting | run_id=1 | epsilon=5.0 | mechanism=Local
+21:15:56 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=5.0 mechanism=Local
+21:19:07 | INFO | BERTScore finished | run_id=1 epsilon=5.0 mechanism=Local
+21:19:07 | INFO | Evaluation finished | run_id=1 | epsilon=5.0 | mechanism=Local
+21:19:07 | INFO | Evaluation starting | run_id=1 | epsilon=5.0 | mechanism=Metric
+21:20:17 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=5.0 mechanism=Metric
+21:23:37 | INFO | BERTScore finished | run_id=1 epsilon=5.0 mechanism=Metric
+21:23:37 | INFO | Evaluation finished | run_id=1 | epsilon=5.0 | mechanism=Metric
+21:23:37 | INFO | Evaluation starting | run_id=1 | epsilon=10.0 | mechanism=Central
+21:24:31 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=10.0 mechanism=Central
+21:28:01 | INFO | BERTScore finished | run_id=1 epsilon=10.0 mechanism=Central
+21:28:01 | INFO | Evaluation finished | run_id=1 | epsilon=10.0 | mechanism=Central
+21:28:01 | INFO | Evaluation starting | run_id=1 | epsilon=10.0 | mechanism=Local
+21:28:54 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=10.0 mechanism=Local
+21:32:03 | INFO | BERTScore finished | run_id=1 epsilon=10.0 mechanism=Local
+21:32:03 | INFO | Evaluation finished | run_id=1 | epsilon=10.0 | mechanism=Local
+21:32:03 | INFO | Evaluation starting | run_id=1 | epsilon=10.0 | mechanism=Metric
+21:33:13 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=1 epsilon=10.0 mechanism=Metric
+21:36:13 | INFO | BERTScore finished | run_id=1 epsilon=10.0 mechanism=Metric
+21:36:13 | INFO | Evaluation finished | run_id=1 | epsilon=10.0 | mechanism=Metric
+21:36:13 | INFO | Starting DP realization | run=3/5
+21:36:13 | INFO | Evaluation starting | run_id=2 | epsilon=0.1 | mechanism=Central
+21:37:07 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=0.1 mechanism=Central
+21:40:37 | INFO | BERTScore finished | run_id=2 epsilon=0.1 mechanism=Central
+21:40:37 | INFO | Evaluation finished | run_id=2 | epsilon=0.1 | mechanism=Central
+21:40:37 | INFO | Evaluation starting | run_id=2 | epsilon=0.1 | mechanism=Local
+21:41:30 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=0.1 mechanism=Local
+21:44:39 | INFO | BERTScore finished | run_id=2 epsilon=0.1 mechanism=Local
+21:44:39 | INFO | Evaluation finished | run_id=2 | epsilon=0.1 | mechanism=Local
+21:44:39 | INFO | Evaluation starting | run_id=2 | epsilon=0.1 | mechanism=Metric
+21:45:46 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=0.1 mechanism=Metric
+21:49:18 | INFO | BERTScore finished | run_id=2 epsilon=0.1 mechanism=Metric
+21:49:18 | INFO | Evaluation finished | run_id=2 | epsilon=0.1 | mechanism=Metric
+21:49:18 | INFO | Evaluation starting | run_id=2 | epsilon=1.0 | mechanism=Central
+21:50:11 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=1.0 mechanism=Central
+21:53:40 | INFO | BERTScore finished | run_id=2 epsilon=1.0 mechanism=Central
+21:53:40 | INFO | Evaluation finished | run_id=2 | epsilon=1.0 | mechanism=Central
+21:53:40 | INFO | Evaluation starting | run_id=2 | epsilon=1.0 | mechanism=Local
+21:54:32 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=1.0 mechanism=Local
+21:57:43 | INFO | BERTScore finished | run_id=2 epsilon=1.0 mechanism=Local
+21:57:43 | INFO | Evaluation finished | run_id=2 | epsilon=1.0 | mechanism=Local
+21:57:43 | INFO | Evaluation starting | run_id=2 | epsilon=1.0 | mechanism=Metric
+21:58:50 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=1.0 mechanism=Metric
+22:02:22 | INFO | BERTScore finished | run_id=2 epsilon=1.0 mechanism=Metric
+22:02:22 | INFO | Evaluation finished | run_id=2 | epsilon=1.0 | mechanism=Metric
+22:02:22 | INFO | Evaluation starting | run_id=2 | epsilon=5.0 | mechanism=Central
+22:03:15 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=5.0 mechanism=Central
+22:06:43 | INFO | BERTScore finished | run_id=2 epsilon=5.0 mechanism=Central
+22:06:43 | INFO | Evaluation finished | run_id=2 | epsilon=5.0 | mechanism=Central
+22:06:43 | INFO | Evaluation starting | run_id=2 | epsilon=5.0 | mechanism=Local
+22:07:37 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=5.0 mechanism=Local
+22:10:47 | INFO | BERTScore finished | run_id=2 epsilon=5.0 mechanism=Local
+22:10:47 | INFO | Evaluation finished | run_id=2 | epsilon=5.0 | mechanism=Local
+22:10:47 | INFO | Evaluation starting | run_id=2 | epsilon=5.0 | mechanism=Metric
+22:11:58 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=5.0 mechanism=Metric
+22:15:16 | INFO | BERTScore finished | run_id=2 epsilon=5.0 mechanism=Metric
+22:15:16 | INFO | Evaluation finished | run_id=2 | epsilon=5.0 | mechanism=Metric
+22:15:16 | INFO | Evaluation starting | run_id=2 | epsilon=10.0 | mechanism=Central
+22:16:10 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=10.0 mechanism=Central
+22:19:40 | INFO | BERTScore finished | run_id=2 epsilon=10.0 mechanism=Central
+22:19:40 | INFO | Evaluation finished | run_id=2 | epsilon=10.0 | mechanism=Central
+22:19:40 | INFO | Evaluation starting | run_id=2 | epsilon=10.0 | mechanism=Local
+22:20:32 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=10.0 mechanism=Local
+22:23:43 | INFO | BERTScore finished | run_id=2 epsilon=10.0 mechanism=Local
+22:23:43 | INFO | Evaluation finished | run_id=2 | epsilon=10.0 | mechanism=Local
+22:23:43 | INFO | Evaluation starting | run_id=2 | epsilon=10.0 | mechanism=Metric
+22:24:54 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=2 epsilon=10.0 mechanism=Metric
+22:27:53 | INFO | BERTScore finished | run_id=2 epsilon=10.0 mechanism=Metric
+22:27:53 | INFO | Evaluation finished | run_id=2 | epsilon=10.0 | mechanism=Metric
+22:27:53 | INFO | Starting DP realization | run=4/5
+22:27:53 | INFO | Evaluation starting | run_id=3 | epsilon=0.1 | mechanism=Central
+22:28:48 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=0.1 mechanism=Central
+22:32:15 | INFO | BERTScore finished | run_id=3 epsilon=0.1 mechanism=Central
+22:32:15 | INFO | Evaluation finished | run_id=3 | epsilon=0.1 | mechanism=Central
+22:32:15 | INFO | Evaluation starting | run_id=3 | epsilon=0.1 | mechanism=Local
+22:33:08 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=0.1 mechanism=Local
+22:36:17 | INFO | BERTScore finished | run_id=3 epsilon=0.1 mechanism=Local
+22:36:17 | INFO | Evaluation finished | run_id=3 | epsilon=0.1 | mechanism=Local
+22:36:17 | INFO | Evaluation starting | run_id=3 | epsilon=0.1 | mechanism=Metric
+22:37:23 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=0.1 mechanism=Metric
+22:40:52 | INFO | BERTScore finished | run_id=3 epsilon=0.1 mechanism=Metric
+22:40:52 | INFO | Evaluation finished | run_id=3 | epsilon=0.1 | mechanism=Metric
+22:40:52 | INFO | Evaluation starting | run_id=3 | epsilon=1.0 | mechanism=Central
+22:41:45 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=1.0 mechanism=Central
+22:45:13 | INFO | BERTScore finished | run_id=3 epsilon=1.0 mechanism=Central
+22:45:13 | INFO | Evaluation finished | run_id=3 | epsilon=1.0 | mechanism=Central
+22:45:13 | INFO | Evaluation starting | run_id=3 | epsilon=1.0 | mechanism=Local
+22:46:05 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=1.0 mechanism=Local
+22:49:18 | INFO | BERTScore finished | run_id=3 epsilon=1.0 mechanism=Local
+22:49:18 | INFO | Evaluation finished | run_id=3 | epsilon=1.0 | mechanism=Local
+22:49:18 | INFO | Evaluation starting | run_id=3 | epsilon=1.0 | mechanism=Metric
+22:50:25 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=1.0 mechanism=Metric
+22:53:53 | INFO | BERTScore finished | run_id=3 epsilon=1.0 mechanism=Metric
+22:53:53 | INFO | Evaluation finished | run_id=3 | epsilon=1.0 | mechanism=Metric
+22:53:53 | INFO | Evaluation starting | run_id=3 | epsilon=5.0 | mechanism=Central
+22:54:47 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=5.0 mechanism=Central
+22:58:15 | INFO | BERTScore finished | run_id=3 epsilon=5.0 mechanism=Central
+22:58:15 | INFO | Evaluation finished | run_id=3 | epsilon=5.0 | mechanism=Central
+22:58:15 | INFO | Evaluation starting | run_id=3 | epsilon=5.0 | mechanism=Local
+22:59:08 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=5.0 mechanism=Local
+23:02:15 | INFO | BERTScore finished | run_id=3 epsilon=5.0 mechanism=Local
+23:02:15 | INFO | Evaluation finished | run_id=3 | epsilon=5.0 | mechanism=Local
+23:02:15 | INFO | Evaluation starting | run_id=3 | epsilon=5.0 | mechanism=Metric
+23:03:24 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=5.0 mechanism=Metric
+23:06:43 | INFO | BERTScore finished | run_id=3 epsilon=5.0 mechanism=Metric
+23:06:43 | INFO | Evaluation finished | run_id=3 | epsilon=5.0 | mechanism=Metric
+23:06:43 | INFO | Evaluation starting | run_id=3 | epsilon=10.0 | mechanism=Central
+23:07:37 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=10.0 mechanism=Central
+23:11:05 | INFO | BERTScore finished | run_id=3 epsilon=10.0 mechanism=Central
+23:11:05 | INFO | Evaluation finished | run_id=3 | epsilon=10.0 | mechanism=Central
+23:11:05 | INFO | Evaluation starting | run_id=3 | epsilon=10.0 | mechanism=Local
+23:11:58 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=10.0 mechanism=Local
+23:15:10 | INFO | BERTScore finished | run_id=3 epsilon=10.0 mechanism=Local
+23:15:10 | INFO | Evaluation finished | run_id=3 | epsilon=10.0 | mechanism=Local
+23:15:10 | INFO | Evaluation starting | run_id=3 | epsilon=10.0 | mechanism=Metric
+23:16:20 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=3 epsilon=10.0 mechanism=Metric
+23:19:20 | INFO | BERTScore finished | run_id=3 epsilon=10.0 mechanism=Metric
+23:19:20 | INFO | Evaluation finished | run_id=3 | epsilon=10.0 | mechanism=Metric
+23:19:20 | INFO | Starting DP realization | run=5/5
+23:19:20 | INFO | Evaluation starting | run_id=4 | epsilon=0.1 | mechanism=Central
+23:20:12 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=0.1 mechanism=Central
+23:23:41 | INFO | BERTScore finished | run_id=4 epsilon=0.1 mechanism=Central
+23:23:41 | INFO | Evaluation finished | run_id=4 | epsilon=0.1 | mechanism=Central
+23:23:41 | INFO | Evaluation starting | run_id=4 | epsilon=0.1 | mechanism=Local
+23:24:35 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=0.1 mechanism=Local
+23:27:45 | INFO | BERTScore finished | run_id=4 epsilon=0.1 mechanism=Local
+23:27:45 | INFO | Evaluation finished | run_id=4 | epsilon=0.1 | mechanism=Local
+23:27:45 | INFO | Evaluation starting | run_id=4 | epsilon=0.1 | mechanism=Metric
+23:28:52 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=0.1 mechanism=Metric
+23:32:23 | INFO | BERTScore finished | run_id=4 epsilon=0.1 mechanism=Metric
+23:32:23 | INFO | Evaluation finished | run_id=4 | epsilon=0.1 | mechanism=Metric
+23:32:23 | INFO | Evaluation starting | run_id=4 | epsilon=1.0 | mechanism=Central
+23:33:16 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=1.0 mechanism=Central
+23:36:44 | INFO | BERTScore finished | run_id=4 epsilon=1.0 mechanism=Central
+23:36:44 | INFO | Evaluation finished | run_id=4 | epsilon=1.0 | mechanism=Central
+23:36:44 | INFO | Evaluation starting | run_id=4 | epsilon=1.0 | mechanism=Local
+23:37:38 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=1.0 mechanism=Local
+23:40:47 | INFO | BERTScore finished | run_id=4 epsilon=1.0 mechanism=Local
+23:40:47 | INFO | Evaluation finished | run_id=4 | epsilon=1.0 | mechanism=Local
+23:40:47 | INFO | Evaluation starting | run_id=4 | epsilon=1.0 | mechanism=Metric
+23:41:56 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=1.0 mechanism=Metric
+23:45:27 | INFO | BERTScore finished | run_id=4 epsilon=1.0 mechanism=Metric
+23:45:27 | INFO | Evaluation finished | run_id=4 | epsilon=1.0 | mechanism=Metric
+23:45:27 | INFO | Evaluation starting | run_id=4 | epsilon=5.0 | mechanism=Central
+23:46:20 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=5.0 mechanism=Central
+23:49:52 | INFO | BERTScore finished | run_id=4 epsilon=5.0 mechanism=Central
+23:49:52 | INFO | Evaluation finished | run_id=4 | epsilon=5.0 | mechanism=Central
+23:49:52 | INFO | Evaluation starting | run_id=4 | epsilon=5.0 | mechanism=Local
+23:50:44 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=5.0 mechanism=Local
+23:53:56 | INFO | BERTScore finished | run_id=4 epsilon=5.0 mechanism=Local
+23:53:56 | INFO | Evaluation finished | run_id=4 | epsilon=5.0 | mechanism=Local
+23:53:56 | INFO | Evaluation starting | run_id=4 | epsilon=5.0 | mechanism=Metric
+23:55:06 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=5.0 mechanism=Metric
+23:58:25 | INFO | BERTScore finished | run_id=4 epsilon=5.0 mechanism=Metric
+23:58:25 | INFO | Evaluation finished | run_id=4 | epsilon=5.0 | mechanism=Metric
+23:58:25 | INFO | Evaluation starting | run_id=4 | epsilon=10.0 | mechanism=Central
+23:59:19 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=10.0 mechanism=Central
+00:02:50 | INFO | BERTScore finished | run_id=4 epsilon=10.0 mechanism=Central
+00:02:50 | INFO | Evaluation finished | run_id=4 | epsilon=10.0 | mechanism=Central
+00:02:50 | INFO | Evaluation starting | run_id=4 | epsilon=10.0 | mechanism=Local
+00:03:44 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=10.0 mechanism=Local
+00:06:54 | INFO | BERTScore finished | run_id=4 epsilon=10.0 mechanism=Local
+00:06:54 | INFO | Evaluation finished | run_id=4 | epsilon=10.0 | mechanism=Local
+00:06:54 | INFO | Evaluation starting | run_id=4 | epsilon=10.0 | mechanism=Metric
+00:08:04 | INFO | BERTScore starting — this may take several minutes on CPU | run_id=4 epsilon=10.0 mechanism=Metric
+00:11:04 | INFO | BERTScore finished | run_id=4 epsilon=10.0 mechanism=Metric
+00:11:04 | INFO | Evaluation finished | run_id=4 | epsilon=10.0 | mechanism=Metric
+00:11:04 | INFO | Results written | path=/content/med-rag-privacy-eval-main/data/results.csv | rows=61
+00:11:04 | INFO | Experiment script finished | elapsed=262m 53s
