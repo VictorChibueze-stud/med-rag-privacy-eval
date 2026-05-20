@@ -37,6 +37,7 @@ from sklearn.model_selection import train_test_split
 from src.data_loader import ChatDoctorLoader
 from src.evaluation.inversion import EmbeddingInversion
 from src.evaluation.inversion_probe import LinearProbeInversion
+from src.evaluation.mia_knn_ratio import KNNDistanceRatioMembershipInference
 from src.evaluation.mia_lira import LiRAMembershipInference
 from src.evaluation.utility import UtilityEvaluator
 from src.models.central_dp import CentralDPMechanism
@@ -74,6 +75,7 @@ def _eval_mechanism(
     orig_by_row: list[str],
     sample_i: np.ndarray,
     lira: LiRAMembershipInference,
+    knn_ratio: KNNDistanceRatioMembershipInference | None,
     inv: EmbeddingInversion,
     probe: LinearProbeInversion,
     util: UtilityEvaluator,
@@ -87,17 +89,24 @@ def _eval_mechanism(
         orig_by_row: Gold text strings aligned with ``embs`` rows.
         sample_i: Row indices to use for ROUGE-L inversion (fixed 100-sample subset).
         lira: Trained ``LiRAMembershipInference`` instance.
+        knn_ratio: Optional fitted k-NN distance-ratio MIA. The same attack
+            object is applied to Baseline, Central DP, Local DP, and Metric DP
+            so all mechanisms receive a `tpr_mia_knn_ratio` value.
         inv: Built ``EmbeddingInversion`` index.
         probe: Fitted ``LinearProbeInversion`` attack.
         util: ``UtilityEvaluator`` instance.
 
     Returns:
-        Dict with keys ``tpr_mia``, ``inversion_rouge_l_mean``,
-        ``probe_rouge_l_mean``, ``bert_precision``, ``bert_recall``, ``bert_f1``.
+        Dict with keys ``tpr_mia``, ``tpr_mia_knn_ratio``,
+        ``inversion_rouge_l_mean``, ``probe_rouge_l_mean``, ``bert_precision``,
+        ``bert_recall``, ``bert_f1``.
     """
-    tpr = lira.evaluate_tpr_at_fpr(
-        np.asarray(embs, dtype=np.float64), target_labels, 0.001
-    )
+    embs64 = np.asarray(embs, dtype=np.float64)
+    tpr = lira.evaluate_tpr_at_fpr(embs64, target_labels, 0.001)
+    if knn_ratio is None:
+        tpr_knn_ratio = float("nan")
+    else:
+        tpr_knn_ratio = knn_ratio.evaluate_tpr_at_fpr(embs64, target_labels, 0.001)
 
     rouge_scores = []
     probe_scores = []
@@ -123,6 +132,7 @@ def _eval_mechanism(
 
     return {
         "tpr_mia": tpr,
+        "tpr_mia_knn_ratio": tpr_knn_ratio,
         "inversion_rouge_l_mean": mean_rouge,
         "probe_rouge_l_mean": mean_probe_rouge,
         "bert_precision": bs["precision"],
@@ -194,6 +204,11 @@ def main() -> None:
     lira.train_shadow_models(e_sm, e_snm)
     log.info("LiRA shadow training finished | shadow_models=%d", lira.n_shadow_models)
 
+    knn_ratio = KNNDistanceRatioMembershipInference(k=5)
+    log.info("k-NN distance-ratio MIA fitting starting | k=%d", knn_ratio.k)
+    knn_ratio.fit(e_sm, e_snm)
+    log.info("k-NN distance-ratio MIA fitting finished | k=%d", knn_ratio.k)
+
     # Fixed 100 target rows to compare ROUGE across ε without resampling noise.
     rng = np.random.default_rng(42)
     sample_i = rng.choice(
@@ -228,6 +243,7 @@ def main() -> None:
         orig_by_row,
         sample_i,
         lira,
+        knn_ratio,
         inv,
         probe,
         util,
@@ -266,6 +282,7 @@ def main() -> None:
                 orig_by_row,
                 sample_i,
                 lira,
+                knn_ratio,
                 inv,
                 probe,
                 util,
@@ -306,6 +323,7 @@ def main() -> None:
                 orig_by_row,
                 sample_i,
                 lira,
+                knn_ratio,
                 inv,
                 probe,
                 util,
@@ -345,6 +363,7 @@ def main() -> None:
                 orig_by_row,
                 sample_i,
                 lira,
+                knn_ratio,
                 inv,
                 probe,
                 util,
@@ -374,6 +393,7 @@ def main() -> None:
             "epsilon",
             "mechanism",
             "tpr_mia",
+            "tpr_mia_knn_ratio",
             "inversion_rouge_l_mean",
             "probe_rouge_l_mean",
             "bert_precision",

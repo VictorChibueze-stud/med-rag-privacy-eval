@@ -28,6 +28,7 @@ LONG_REQUIRED_COLUMNS = [
 LONG_OPTIONAL_COLUMNS = [
     "run_id",
     "probe_rouge_l_mean",
+    "tpr_mia_knn_ratio",
     "bert_precision",
     "bert_recall",
 ]
@@ -56,6 +57,7 @@ def _load_demo_long() -> pd.DataFrame:
             "mechanism": "Baseline",
             "bert_f1": 0.86,
             "tpr_mia": 0.50,
+            "tpr_mia_knn_ratio": 0.42,
             "inversion_rouge_l_mean": 0.62,
             "probe_rouge_l_mean": 0.48,
         }
@@ -71,6 +73,7 @@ def _load_demo_long() -> pd.DataFrame:
                     "mechanism": "Central",
                     "bert_f1": 0.72 + 0.12 * (i + 1) / len(eps) + offset,
                     "tpr_mia": max(0.02, 0.45 - 0.05 * (i + 1) - offset),
+                    "tpr_mia_knn_ratio": max(0.01, 0.36 - 0.045 * (i + 1) - offset),
                     "inversion_rouge_l_mean": 0.5
                     + 0.08 * (i + 1) / len(eps)
                     + offset,
@@ -84,6 +87,7 @@ def _load_demo_long() -> pd.DataFrame:
                     "mechanism": "Local",
                     "bert_f1": 0.68 + 0.1 * (i + 1) / len(eps) + offset,
                     "tpr_mia": max(0.05, 0.38 - 0.04 * (i + 1) - offset),
+                    "tpr_mia_knn_ratio": max(0.01, 0.30 - 0.035 * (i + 1) - offset),
                     "inversion_rouge_l_mean": 0.45
                     + 0.07 * (i + 1) / len(eps)
                     + offset,
@@ -97,6 +101,7 @@ def _load_demo_long() -> pd.DataFrame:
                     "mechanism": "Metric",
                     "bert_f1": 0.74 + 0.11 * (i + 1) / len(eps) + offset,
                     "tpr_mia": max(0.02, 0.41 - 0.045 * (i + 1) - offset),
+                    "tpr_mia_knn_ratio": max(0.01, 0.33 - 0.04 * (i + 1) - offset),
                     "inversion_rouge_l_mean": 0.52
                     + 0.075 * (i + 1) / len(eps)
                     + offset,
@@ -164,6 +169,7 @@ def load_results() -> pd.DataFrame:
         "tpr_mia",
         "inversion_rouge_l_mean",
         "probe_rouge_l_mean",
+        "tpr_mia_knn_ratio",
         "bert_f1",
     ]
     for c in numeric_cols:
@@ -264,6 +270,13 @@ def main() -> None:
         ylabel="ROUGE-L (linear probe reconstruction)",
         title="Linear Probe Inversion Fidelity under DP",
         out_name="probe_inversion_vs_epsilon.png",
+    )
+    _lineplot_save(
+        df,
+        ycol="tpr_mia_knn_ratio",
+        ylabel="k-NN ratio TPR @ 0.1% FPR",
+        title="k-NN Distance-Ratio MIA under DP Mechanisms",
+        out_name="mia_knn_ratio_vs_epsilon.png",
     )
 
 
