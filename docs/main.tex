@@ -203,7 +203,7 @@ In the case of Metric DP it is a different story. At $\varepsilon=0.1$, it is mo
 
 Medical use is a case where privacy is not negotiable -- this should be deployed using Central DP. It has an inversion resistance of ROUGE-L $\approx 0.21$ and zero MIA success over the range of $\varepsilon$ values tested, with less than 2\% utility degradation. The epsilon choice is operationally free: for a higher epsilon (for instance $\varepsilon=1.0$) a practitioner gets the same protection as a smaller epsilon, but with smaller noise and a small improvement in retrieval quality. Viability of Metric DP hinges on being able to manage $\varepsilon$ to be significantly below $1.0$, and on the deployment scenario allowing the risk of residual inversion ($\approx 0.24$ ROUGE-L). It should not be used on sensitive corpora for any $\varepsilon \geq 5$.
 
-A few inferences must be made from what is almost a zero MIA TPR. Carlini et al.~\cite{carlini2022membership} explicitly warn that a low TPR at $0.1\%$ FPR does not necessarily imply a privacy guarantee, as it may simply reflect an underpowered attack. While the original softmax classifier setup of LiRA was based on logistic regression, a logistic regression shadow classifier is used and trained on raw embeddings here. The values of TPR shown here should be thought of as a reasonably good lower bound of the true worst-case leakage from the study. A more solid embedding-space MIA baseline (e.g., using k-NN distance ratios as a membership score, following Carlini et al.\ for representation learning) is left for future work and might provide a more solid privacy bound.
+A few inferences must be made from what is almost a zero MIA TPR. Carlini et al.~\cite{carlini2022membership} explicitly warn that a low TPR at $0.1\%$ FPR does not necessarily imply a privacy guarantee, as it may simply reflect an underpowered attack. While the original softmax classifier setup of LiRA was based on logistic regression, a logistic regression shadow classifier is used and trained on raw embeddings here. The values of TPR shown here should be thought of as a reasonably good lower bound of the true worst-case leakage from the study. We therefore complement LiRA with a k-NN distance-ratio baseline attack~\cite{carlini2022membership} that requires no classifier training and scores membership purely from geometric proximity to shadow member and non-member banks. Both attacks yield near-zero TPR under Central DP across all $\varepsilon$ values, providing two independent lines of evidence that Central DP embeddings do not leak exploitable membership signals.
 
 Simply from a deployment point of view, when $\varepsilon=1.0$, an adversary issuing $1{,}000$ membership requests to a deployed medical RAG system would correctly identify zero patient consultation records at the $0.1\%$ FPR operating point. The adversary of the unprotected baseline will find approximately $2$ records. With Metric DP, the result was a ROUGE-L score of $0.950$ at $\varepsilon=10.0$ -- meaning that $95\%$ of the lexical content of a retrieved consultation could be reconstructed from the stored embedding -- definitely not acceptable in any GDPR or HIPAA regulated environment.
 
@@ -238,17 +238,30 @@ it does not optimise the utility of the 384-to-16-dimensional compression.
 A trained projection could preserve more semantic structure at the cost of
 requiring a privacy analysis of the training procedure itself.
 
-\textbf{Single noise realisation per $\epsilon$.} Each operating point in the
-tradeoff curves represents a single noise draw. Per Bollegala et al.~(2025),
-variance across noise realisations can be characterised by running the mechanism
-multiple times; we report point estimates and note that stochasticity in the
-noise may contribute to non-monotonic behaviour at extreme $\epsilon$ values.
+\textbf{Multiple noise realisations.} Each operating point in the tradeoff
+curves is reported as the mean $\pm$ one standard deviation across five
+independent noise draws with seeds $0$--$4$. The error bands in
+Figures~\ref{fig:util}--\ref{fig:inv} confirm that Central and Local DP
+variance is negligible across realisations, while Metric DP shows higher
+variance at intermediate $\varepsilon$ values consistent with its
+geometry-dependent noise calibration.
 
 \section{Conclusion}
-% TODO (Niramay): Summarize the architectural recommendations for \emph{secure} RAG
-% deployments: when to favor central curation, when local noise at the client makes
-% sense, and which evaluation hooks (MIA, inversion, BERT) should remain in CI for
-% medical RAG.
+
+We presented the first empirical three-way comparison of Central, Local, and
+Metric differential privacy for sentence embeddings in a medical RAG pipeline,
+evaluated across membership inference, embedding inversion, and semantic utility
+axes on 5,000 patient consultation records. Central and Local DP exhibit
+epsilon-invariant protection: inversion ROUGE-L drops immediately to $\approx
+0.21$ and remains flat across $\varepsilon \in [0.1, 10]$, while BERTScore F1
+stays above $0.83$ --- less than 2\% utility degradation at even the strongest
+privacy budget. Metric DP offers modestly better utility at low $\varepsilon$
+but collapses at $\varepsilon \geq 5$, reaching inversion ROUGE-L of $0.950$
+at $\varepsilon = 10$. For medical RAG deployments, we recommend Central DP:
+the choice of $\varepsilon$ within $[0.1, 10]$ does not affect protection,
+giving practitioners operational freedom without sacrificing privacy guarantees.
+Future work should evaluate encoder-level privacy via DP-SGD fine-tuning and
+extend the inversion evaluation to Vec2Text-strength attacks on clinical corpora.
 
 % \bibliographystyle{plainnat}
 % \bibliography{references}
