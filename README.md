@@ -2,7 +2,7 @@
 
 **Evaluating Central vs. Local Differential Privacy for Vector Embeddings in Medical RAG Systems**
 
-This repository contains the core evaluation pipeline for measuring the privacy-utility tradeoff of applying Differential Privacy (DP) mechanisms directly to the embedding layer of a Retrieval-Augmented Generation (RAG) system. We evaluate these protections against worst-case Membership Inference Attacks (LiRA) and Embedding Inversion.
+This repository contains the core evaluation pipeline for measuring the privacy-utility tradeoff of applying Differential Privacy (DP) mechanisms directly to the embedding layer of a Retrieval-Augmented Generation (RAG) system. We evaluate these protections against Membership Inference Attacks (LiRA plus a simple k-NN distance-ratio baseline) and Embedding Inversion.
 
 ## 👥 Team
 
@@ -70,9 +70,27 @@ When your feature is complete, open a Pull Request against `main`. Tag Victor fo
 ## 📂 Project Architecture
 
 * `data/`: Contains the ChatDoctor dataset and generated `.csv` results (ignored in git).
-* `src/models/`: Contains the RAGBaseline, CentralDPMechanism, and LocalDPProjector.
-* `src/evaluation/`: Contains the LiRAMembershipInference, EmbeddingInversion, and UtilityEvaluator.
+* `src/models/`: Contains the RAGBaseline, CentralDPMechanism, LocalDPProjector, and MetricDPMechanism.
+* `src/evaluation/`: Contains LiRA MIA, k-NN distance-ratio MIA, embedding inversion, and utility evaluation.
 * `scripts/`: Contains the execution loops and plotting engines.
 * `tests/`: Mathematical variance and dimensional unit tests.
 
 ***
+
+
+## Running the k-NN MIA baseline
+
+`python scripts/run_experiments.py` generates `data/results.csv` with both MIA columns:
+
+```text
+tpr_mia
+tpr_mia_knn_ratio
+```
+
+The `tpr_mia_knn_ratio` value is produced for every evaluated mechanism: Baseline, Central DP, Local DP, and Metric DP. Then run:
+
+```bash
+python scripts/plot_results.py
+```
+
+to create `docs/figures/mia_knn_ratio_vs_epsilon.png`. If you still have an older `data/results.csv` from before this feature, rerun `scripts/run_experiments.py`; the old CSV will not contain the new k-NN column.
