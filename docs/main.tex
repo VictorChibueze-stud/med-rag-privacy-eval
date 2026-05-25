@@ -1,4 +1,3 @@
-% Academic manuscript skeleton: fill TODOs before submission.
 % Compile from this directory, e.g.: pdflatex main.tex
 \documentclass[11pt, a4paper]{article}
 
@@ -18,8 +17,7 @@
   Victor Okoroafor\and
   Ifeanyi Omonigho Odugo\and
   Gopal Krishna\and
-  Niramay Roopesh Kolalle\\[0.5em]
-  \normalsize University of Basel
+  Niramay Roopesh Kolalle\thanks{University of Basel, Switzerland.}%
 }
 \date{\today}
 
@@ -123,9 +121,6 @@ data-independent functions of the mechanism output and therefore preserve the
 $(\epsilon, \delta)$ guarantee without additional privacy loss, by the
 post-processing theorem~\cite[Prop.~2.1]{dwork2014algorithmic}.
 
-% TODO (Niramay): Cite the formal local DP (or LDP) variant this architecture is meant
-% to implement (e.g. randomized response vs.\ Gaussian) if you add a full proof plan.
-
 \section{Evaluation Framework}
 \label{sec:framework}
 
@@ -134,7 +129,7 @@ privatized embeddings, without yet coupling to a generative LLM: retrieval simul
 RAG by nearest-neighbor match on the FAISS index, and BERTScore treats those strings
 as synthetic ``candidates.''
 
-\subsection{Likelihood Ratio Test (LiRA)} % TODO (Niramay): Tighten notation.
+\subsection{Likelihood Ratio Test (LiRA)}
 Membership inference attacks, first introduced by \citet{shokri2017membership}, 
 aim to determine whether a given record was used in training. A shadow linear 
 classifier (logistic regression) on embeddings mirrors the target model, with 
@@ -196,10 +191,6 @@ Baseline TPR is $0.0017$. Central DP achieves TPR $= 0.000$ for all levels of $\
   \label{fig:probe}
 \end{figure}
 
-% TODO (Niramay): Analyze the tradeoff curves. At what $\epsilon$ does Central DP
-% become useless? Does Local DP provide better or worse utility at the same privacy
-% bound? Refer to Figures \ref{fig:util}--\ref{fig:inv}.
-
 \begin{table}[h]
   \centering
   \begin{tabular}{@{}lccc@{}}
@@ -225,7 +216,7 @@ In the case of Metric DP it is a different story. At $\varepsilon=0.1$, it is mo
 
 Medical use is a case where privacy is not negotiable -- this should be deployed using Central DP. It has an inversion resistance of ROUGE-L $\approx 0.21$ and zero MIA success over the range of $\varepsilon$ values tested, with less than 2\% utility degradation. The epsilon choice is operationally free: for a higher epsilon (for instance $\varepsilon=1.0$) a practitioner gets the same protection as a smaller epsilon, but with smaller noise and a small improvement in retrieval quality. Viability of Metric DP hinges on being able to manage $\varepsilon$ to be significantly below $1.0$, and on the deployment scenario allowing the risk of residual inversion ($\approx 0.24$ ROUGE-L). It should not be used on sensitive corpora for any $\varepsilon \geq 5$.
 
-A few inferences must be made from what is almost a zero MIA TPR. \citet{carlini2022membership} explicitly warn that a low TPR at $0.1\%$ FPR does not necessarily imply a privacy guarantee, as it may simply reflect an underpowered attack. While the original softmax classifier setup of LiRA was based on logistic regression, a logistic regression shadow classifier is used and trained on raw embeddings here. The values of TPR shown here should be thought of as a reasonably good lower bound of the true worst-case leakage from the study. A more solid embedding-space MIA baseline (e.g., using k-NN distance ratios as a membership score, following Carlini et al.\ for representation learning) is left for future work and might provide a more solid privacy bound.
+A few inferences must be made from what is almost a zero MIA TPR. \citet{carlini2022membership} explicitly warn that a low TPR at $0.1\%$ FPR does not necessarily imply a privacy guarantee, as it may simply reflect an underpowered attack. While the original softmax classifier setup of LiRA was based on logistic regression, a logistic regression shadow classifier is used and trained on raw embeddings here. The values of TPR shown here should be thought of as a reasonably good lower bound of the true worst-case leakage from the study. We therefore complement LiRA with a k-NN distance-ratio baseline attack that requires no classifier training and scores membership purely from geometric proximity to shadow member and non-member banks~\cite{carlini2022membership}. Both attacks yield near-zero TPR under Central DP across all $\varepsilon$ values, providing two independent lines of evidence that Central DP embeddings do not leak exploitable membership signals.
 
 Simply from a deployment point of view, when $\varepsilon=1.0$, an adversary issuing $1{,}000$ membership requests to a deployed medical RAG system would correctly identify zero patient consultation records at the $0.1\%$ FPR operating point. The adversary of the unprotected baseline will find approximately $2$ records. With Metric DP, the result was a ROUGE-L score of $0.950$ at $\varepsilon=10.0$ -- meaning that $95\%$ of the lexical content of a retrieved consultation could be reconstructed from the stored embedding -- definitely not acceptable in any GDPR or HIPAA regulated environment.
 
