@@ -157,7 +157,7 @@ We measure end-to-end semantic preservation using BERTScore with a \texttt{rober
 
 For all experiments, 5 independent noise realisations are performed for every ($\varepsilon$, mechanism) pair, from the ChatDoctor-HealthCareMagic-100k corpus, where $\varepsilon \in \{0.1, 1.0, 5.0, 10.0\}$ and $\delta = 10^{-5}$. All data are reported as the average of 5 runs with the errors shown as one standard deviation from the average mean in the figures.
 
-The unperturbed baseline $F_1$ is equal to $F_1 = 1.000$. Central and Local DP keep $F_1$ low: $0.831$--$0.833$ for all of the $\varepsilon$ -- less than 2\% from the baseline even with the most aggressive privacy budget ($\varepsilon = 0.1$). The profile of Metric DP shows a clear separation -- $F_1$ rises from $0.843$ at $\varepsilon=0.1$ to $0.991$ at $\varepsilon=10.0$, with the curves levelling off at baseline at lower values of privacy budget. These trends have been plotted in Figure~\ref{fig:util}.
+The unperturbed baseline $F_1$ is equal to $F_1 = 1.000$. Standard DP theory predicts that utility should increase monotonically with $\varepsilon$ as noise decreases. Metric DP follows this expected pattern: $F_1$ rises from $0.843$ at $\varepsilon=0.1$ to $0.991$ at $\varepsilon=10.0$, approaching baseline at weak privacy budgets. Central and Local DP, however, exhibit a different behaviour: $F_1$ remains stable at $0.831$--$0.833$ across the full $\varepsilon$ range, with less than 2\% degradation from baseline even at the strongest privacy budget ($\varepsilon = 0.1$). This epsilon-invariance indicates that the utility floor imposed by Gaussian noise on this encoder is already reached within our tested range, and is discussed further in Section~\ref{sec:discussion}. These trends are shown in Figure~\ref{fig:util}.
 
 Baseline ROUGE-L is $1.000$. In both cases of Central and Local DP, the results drop drastically to $\approx 0.21$ at $\varepsilon=0.1$, and remain flat for all the values of $\varepsilon$ that have been tested, which clearly demonstrates that nearest-neighbour reconstruction cannot be performed in either case for non-negligible Gaussian noise. On Metric DP, the results are even more dramatic: at $\varepsilon=0.1$, ROUGE-L is $0.238$, but at $\varepsilon=10.0$, ROUGE-L is $0.950$. It is a significant practical failure if an adversary could reconstruct source text with 95\% fidelity using weak Metric DP. See Figure~\ref{fig:inv}.
 
@@ -210,7 +210,8 @@ Baseline TPR is $0.0017$. Central DP achieves TPR $= 0.000$ for all levels of $\
 
 \section{Discussion}
 
-There is epsilon-invariant behaviour between Central/Local DP in all three metrics. The values of utility, inversion resistance and MIA resistance converge to their final values at $\varepsilon=0.1$, and vary little at $\varepsilon>0.1$ up to $10.0$. The hypothesis: As soon as the magnitude of Gaussian noise is bigger than the neighbourhood radius of the all-MiniLM-L6-v2 encoder on the unit hypersphere, it reverts to a fixed floor while the privacy sets at the same time. It is the same type of localisation of the probability mass on a thin shell around the point of embedding in the unit sphere, but it is not some sort of trade-off, it is a ``threshold effect''. This connects to \citet{du2023sanitizing}, which presents privacy at 16-d projection -- and even posits that projection at 384-d is threshold governed.
+\label{sec:discussion}
+Standard DP theory predicts a monotonic privacy-utility tradeoff: lower $\varepsilon$ imposes more noise and therefore reduces utility. Metric DP confirms this prediction, showing clear utility gains as $\varepsilon$ increases. Central and Local DP, however, exhibit epsilon-invariant behaviour across all three metrics within the tested range $\varepsilon \in [0.1, 10]$. We interpret this as a \emph{threshold effect}: once Gaussian noise magnitude exceeds the local neighbourhood radius of the \texttt{all-MiniLM-L6-v2} encoder on the unit hypersphere, retrieval quality saturates at a fixed floor and does not degrade further as noise increases. The expected monotonic tradeoff would become visible below $\varepsilon = 0.1$, outside our tested range. This connects to \citet{du2023sanitizing}, who show that 16-d projection already suffices for privacy, suggesting the full 384-d space is similarly threshold-governed.
 
 In the case of Metric DP it is a different story. At $\varepsilon=0.1$, it is mostly comparable to Central DP on inversion resistance (ROUGE-L $0.238$ vs.\ $0.209$) and utility (BERTScore $0.843$ vs.\ $0.831$). But when $\varepsilon=10.0$, the inversion ROUGE-L is of the same order of magnitude as $0.95$: an adversary can almost reconstruct a source text. This is because at large $\varepsilon$ the noise is less than the neighbourhood radius, and also because the utility gain of DP at low $\varepsilon$ from the Mahalanobis geometry dependent scaling is lost at high $\varepsilon$. This does not happen with the isotropic noise from Central DP, where retrieval is equally impaired at any value of $\varepsilon$. This relates to the work of \citet{bollegala2025cmag}, where evaluation focused on low-$\varepsilon$ regimes and hence this failure mode was not previously described.
 
@@ -251,11 +252,13 @@ it does not optimise the utility of the 384-to-16-dimensional compression.
 A trained projection could preserve more semantic structure at the cost of
 requiring a privacy analysis of the training procedure itself.
 
-\textbf{Single noise realisation per $\epsilon$.} Each operating point in the
-tradeoff curves represents a single noise draw. Per Bollegala et al.~(2025),
-variance across noise realisations can be characterised by running the mechanism
-multiple times; we report point estimates and note that stochasticity in the
-noise may contribute to non-monotonic behaviour at extreme $\epsilon$ values.
+\textbf{Multiple noise realisations.} Each operating point in the tradeoff
+curves is reported as the mean $\pm$ one standard deviation across five
+independent noise draws with seeds $0$--$4$. The error bands in
+Figures~\ref{fig:util}--\ref{fig:inv} confirm that Central and Local DP
+variance is negligible across realisations, while Metric DP shows higher
+variance at intermediate $\varepsilon$ values consistent with its
+geometry-dependent noise calibration.
 
 \section{Conclusion}
 
