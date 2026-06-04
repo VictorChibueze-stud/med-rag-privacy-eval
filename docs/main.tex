@@ -1,7 +1,9 @@
 % Compile from this directory, e.g.: pdflatex main.tex
 \documentclass[11pt, a4paper]{article}
 
-\usepackage[margin=1in]{geometry}
+\usepackage[margin=3cm]{geometry}
+\usepackage[english]{babel}
+\usepackage{times}
 \usepackage{amsmath}
 \usepackage{booktabs}
 \usepackage{graphicx}
@@ -12,19 +14,27 @@
 \usepackage{natbib}
 
 
-\title{Evaluating Central vs.\ Local Differential Privacy for Vector Embeddings in Medical RAG Systems}
-\author{%
-  Victor Okoroafor\and
-  Ifeanyi Omonigho Odugo\and
-  Gopal Krishna\and
-  Niramay Roopesh Kolalle\thanks{University of Basel, Switzerland.}%
-}
-\date{\today}
-
 \begin{document}
-\maketitle
 
-\begin{abstract}
+\begin{titlepage}
+  \includegraphics[width=0.3\textwidth]{figures/logo-en}\par\vspace{1cm}
+  \centering
+  \vspace{1.5cm}
+  {\huge\bfseries Evaluating Central vs.\ Local Differential Privacy for Vector Embeddings in Medical RAG Systems\par}
+  \vspace{1.5cm}
+  {\large Project report for \textit{Privacy-Preserving Methods for Data Science and Distributed Systems}\par}
+  \vspace{1.5cm}
+  {\large Department of Mathematics and Computer Science\par}
+  \vspace{.1cm}
+  {\large University of Basel\par}
+  \vspace{1.5cm}
+  {\large Victor Okoroafor, Ifeanyi Omonigho Odugo, Gopal Krishna, Niramay Roopesh Kolalle\par}
+  \vspace{.1cm}
+  {\large [email1], [email2], [email3], [email4]\par}
+  \vspace{.1cm}
+  {\large [student-number-1], [student-number-2], [student-number-3], [student-number-4]\par}
+  \vspace{1.5cm}
+  \begin{abstract}
 
 Retrieval-Augmented Generation (RAG) systems over medical corpora expose sensitive 
 patient data through their vector databases. We present the first empirical three-way 
@@ -42,6 +52,9 @@ baseline TPR ($0.0017$). Central DP is recommended for medical RAG deployments u
 HIPAA or GDPR.
 
 \end{abstract}
+  \vfill
+  {\large \today\par}
+\end{titlepage}
 
 \section{Introduction}
 
@@ -268,7 +281,30 @@ Central DP may be with regard for those who need to use RAG in a clinical settin
 
 Three directions remain open for future work. First, the MIA baseline used here is a known lower bound on worst-case leakage; a $k$-NN distance-ratio attack on raw embeddings within the LiRA framework, following~\citet{carlini2022membership}, would provide a tighter and more adversarially credible bound. Second, inversion was evaluated using ROUGE-L against a retrieval-based reconstruction; a Vec2Text-level inversion evaluation would more precisely quantify the semantic content recoverable from a privatised embedding. Third, all experiments fix the encoder weights; extending the evaluation to encoder fine-tuning under DP-SGD would characterise both the privacy cost and the potential utility gain of adapting the model to the clinical domain under formal privacy constraints.
 
-\bibliographystyle{plainnat}
+\section{Use of Generative Digital Tools}
+
+This project made use of the following AI-assisted tools, in compliance with the
+University of Basel guidance on AI in teaching:
+
+\begin{itemize}
+
+  \item \textbf{NotebookLM (Google):} Used as a retrieval interface over the
+    project's academic reference corpus. All nine reference papers were uploaded
+    to a shared NotebookLM notebook. During the literature review and manuscript
+    writing phases, the team queried the notebook in natural language to extract
+    relevant passages, methodological details, and citation evidence directly
+    from the uploaded papers. No content from NotebookLM was used without
+    verification against the original source documents.
+\end{itemize}
+
+All factual claims, mathematical derivations, experimental results, and conclusions
+are the original work of the authors. No AI tool was used to generate or fabricate
+experimental data.
+
+\bibliographystyle{apalike}
 \bibliography{references}
+
+\hspace{-2cm}
+\includegraphics[width=1.2\textwidth]{figures/wissensch_Redlichkeit_E_09-2023}
 
 \end{document}
