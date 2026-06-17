@@ -1,96 +1,110 @@
-# 🛡️ Med-RAG Privacy Evaluation
+# Med-RAG Privacy Evaluation
 
-**Evaluating Central vs. Local Differential Privacy for Vector Embeddings in Medical RAG Systems**
+**Evaluating Differential Privacy Mechanisms for Vector Embeddings in Medical RAG Systems: A Three-Way Comparison of Central, Local, and Metric DP**
 
-This repository contains the core evaluation pipeline for measuring the privacy-utility tradeoff of applying Differential Privacy (DP) mechanisms directly to the embedding layer of a Retrieval-Augmented Generation (RAG) system. We evaluate these protections against Membership Inference Attacks (LiRA plus a simple k-NN distance-ratio baseline) and Embedding Inversion.
+Project report for *Privacy-Preserving Methods for Data Science and Distributed Systems*
+Department of Mathematics and Computer Science, University of Basel, Spring 2026.
 
-## 👥 Team
+---
 
-* **Victor Okoroafor** (Project Lead, AI Infrastructure & Adversarial Evaluation)
-* **Ifeanyi Omonigho Odugo** (Privacy Mathematics & Local DP Architect)
-* **Gopal Krishna** (Utility Evaluation & Plotting Engine)
-* **Niramay Roopesh Kolalle** (Academic Documentation & Synthesis)
+## Team
 
-## 🚀 Quickstart & Environment Setup
+| Name | Role |
+|------|------|
+| Victor Okoroafor | Project lead, system architecture, adversarial evaluation |
+| Ifeanyi Omonigho Odugo | Privacy mathematics, Local DP architecture |
+| Gopal Krishna | Utility evaluation, plotting engine, k-NN MIA baseline |
+| Niramay Roopesh Kolalle | Academic documentation, manuscript synthesis |
 
-We strictly use Python 3.10+ and manage dependencies via `requirements.txt`.
+---
 
-1. **Clone the repository:**
+## Overview
 
-   ```bash
-   git clone https://github.com/VictorChibueze-stud/med-rag-privacy-eval.git
-   cd med-rag-privacy-eval
-   ```
+This repository implements and evaluates three differential privacy mechanisms applied to sentence embeddings in a medical Retrieval-Augmented Generation (RAG) pipeline:
 
-2. **Create and activate a virtual environment:**
+- **Central DP** — Analytical Gaussian mechanism with global L2 sensitivity
+- **Local DP** — Fixed random orthogonal projection to 16-d bottleneck with per-document noise
+- **Metric DP** — Mahalanobis-geometry-aware noise following Bollegala et al. (2025)
 
-   ```bash
-   # Windows
-   python -m venv venv
-   .\venv\Scripts\activate
-   ```
+Privacy is evaluated using membership inference (LiRA + k-NN distance ratio baseline) and embedding inversion (nearest-neighbour ROUGE-L + linear probe). Utility is measured via BERTScore F1.
 
-   ```bash
-   # macOS/Linux
-   python3 -m venv venv
-   source venv/bin/activate
-   ```
+---
 
-3. **Install dependencies:**
+## Key Finding
 
-   ```bash
-   pip install -r requirements.txt
-   ```
+Central and Local DP exhibit epsilon-invariant protection across ε ∈ [0.1, 10]: inversion ROUGE-L drops from 1.00 to ~0.21 immediately and stays flat, with less than 2% utility degradation. Metric DP collapses at ε ≥ 5, reaching inversion ROUGE-L of 0.950 at ε = 10. **Central DP is recommended for medical RAG deployments.**
 
-## 📜 Git Workflow & Contribution Rules
+---
 
-To prevent merge conflicts and broken code, direct pushes to the `main` branch are strictly forbidden.
+## Repository Structure
 
-**Branch Naming Convention:** Always branch off `main` before starting your ticket.
+```
+src/
+  data_loader.py              # ChatDoctor dataset loading and splitting
+  models/
+    central_dp.py             # Central DP Gaussian mechanism
+    local_dp.py               # Local DP bottleneck projection
+    metric_dp.py              # Metric DP Mahalanobis mechanism
+    rag_baseline.py           # Unperturbed RAG baseline
+  evaluation/
+    mia_lira.py               # LiRA membership inference attack
+    mia_knn_ratio.py          # k-NN distance ratio MIA baseline
+    inversion.py              # Nearest-neighbour embedding inversion
+    inversion_probe.py        # Linear probe inversion attack
+    utility.py                # BERTScore utility evaluation
+scripts/
+  run_experiments.py          # Full experiment pipeline
+  plot_results.py             # Figure generation
+tests/                        # Unit and integration tests (14 tests)
+docs/
+  main.tex                    # Paper manuscript
+  references.bib              # Bibliography
+  figures/                    # Generated experiment figures
+  proposal.pdf                # Original project proposal
+data/
+  .gitkeep                    # Directory placeholder
+  results.csv                 # Generated — run run_experiments.py
+```
 
-* **Features:** `feat/ticket-name` (e.g., `feat/local-dp-projection`)
-* **Bug Fixes:** `fix/ticket-name` (e.g., `fix/faiss-index-bug`)
-* **Documentation:** `docs/ticket-name` (e.g., `docs/latex-draft`)
+---
 
-**Code Quality (Ruff):**
-
-We use ruff to enforce PEP-8 standards. Before committing your code, you must run:
+## Setup
 
 ```bash
-ruff check .
-ruff format .
+git clone https://github.com/VictorChibueze-stud/med-rag-privacy-eval.git
+cd med-rag-privacy-eval
+python -m venv .venv
+source .venv/bin/activate     # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+pytest tests/ -v              # All 14 tests must pass
 ```
 
-If the GitHub Actions CI pipeline fails because of formatting, your PR will not be reviewed.
+---
 
-**Pull Requests (PRs):**
+## Data
 
-When your feature is complete, open a Pull Request against `main`. Tag Victor for architectural review before merging.
-
-## 📂 Project Architecture
-
-* `data/`: Contains the ChatDoctor dataset and generated `.csv` results (ignored in git).
-* `src/models/`: Contains the RAGBaseline, CentralDPMechanism, LocalDPProjector, and MetricDPMechanism.
-* `src/evaluation/`: Contains LiRA MIA, k-NN distance-ratio MIA, embedding inversion, and utility evaluation.
-* `scripts/`: Contains the execution loops and plotting engines.
-* `tests/`: Mathematical variance and dimensional unit tests.
-
-***
-
-
-## Running the k-NN MIA baseline
-
-`python scripts/run_experiments.py` generates `data/results.csv` with both MIA columns:
-
-```text
-tpr_mia
-tpr_mia_knn_ratio
-```
-
-The `tpr_mia_knn_ratio` value is produced for every evaluated mechanism: Baseline, Central DP, Local DP, and Metric DP. Then run:
+The ChatDoctor-HealthCareMagic-100k dataset is not included in this repository due to size. Download it with:
 
 ```bash
-python scripts/plot_results.py
+python download_chatdoctor.py
 ```
 
-to create `docs/figures/mia_knn_ratio_vs_epsilon.png`. If you still have an older `data/results.csv` from before this feature, rerun `scripts/run_experiments.py`; the old CSV will not contain the new k-NN column.
+This creates `data/chatdoctor.json` (required by `run_experiments.py`).
+
+---
+
+## Reproducing Results
+
+```bash
+python scripts/run_experiments.py   # ~4-8 hours on CPU; produces data/results.csv
+python scripts/plot_results.py      # Produces docs/figures/*.png
+```
+
+The experiment runs 5 independent noise realisations per (ε, mechanism) combination across ε ∈ {0.1, 1.0, 5.0, 10.0} with δ = 1e-5.
+
+---
+
+## Reference
+
+Paper manuscript: `docs/main.tex`
+Dataset: [ChatDoctor-HealthCareMagic-100k](https://huggingface.co/datasets/lavita/ChatDoctor-HealthCareMagic-100k)

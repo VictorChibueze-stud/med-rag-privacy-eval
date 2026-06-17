@@ -102,3 +102,21 @@ data/**/*.bin
 *.hdf5
 *.npy
 *.npz
+
+# Dataset files (too large for git, download via download_chatdoctor.py)
+data/*.jsonl
+data/*.log
+
+# Report template (reference only, content integrated into docs/)
+report-template/
+report-template.zip
+
+# Internal project coordination documents (not part of academic submission)
+# Kept in repo for team reference but excluded from clean academic view
+niramay_results.csv
+
+# OS artifacts
+*.DS_Store
+
+PROJECT_STATUS.md
+WRITING_GUIDE.md
