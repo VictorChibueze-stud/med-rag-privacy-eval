@@ -1,13 +1,9 @@
 """LiRA membership inference with bootstrap shadow models (Carlini et al. 2022)."""
-
 import numpy as np
 import scipy.stats
 from sklearn.linear_model import LogisticRegression
-
-
 class LiRAMembershipInference:
     """Offline LiRA with global variance estimation over n_shadow_models classifiers."""
-
     def __init__(self, n_shadow_models: int = 16) -> None:
         self.n_shadow_models = n_shadow_models
         self.shadow_models: list[LogisticRegression] = [
@@ -15,13 +11,11 @@ class LiRAMembershipInference:
         ]
         self.mu_out: float = 0.0
         self.sigma_out: float = 1.0
-
     @staticmethod
     def _logit(p: np.ndarray) -> np.ndarray:
         eps = 1e-9
         pc = np.clip(p, eps, 1.0 - eps)
         return np.log(pc / (1.0 - pc))
-
     def train_shadow_models(
         self,
         shadow_member_embeddings: np.ndarray,
@@ -40,9 +34,7 @@ class LiRAMembershipInference:
                 f"n_shadow_models rows to avoid degenerate bootstrap resamples."
             )
             raise ValueError(msg)
-
         rng = np.random.default_rng(seed=None)
-
         for model in self.shadow_models:
             idx_m = rng.integers(0, x_m.shape[0], size=x_m.shape[0])
             idx_n = rng.integers(0, x_n.shape[0], size=x_n.shape[0])
@@ -54,7 +46,6 @@ class LiRAMembershipInference:
                 ]
             )
             model.fit(x_boot, y_boot)
-
         all_phi: list[np.ndarray] = []
         for model in self.shadow_models:
             probs = model.predict_proba(x_n)[:, 1]
@@ -65,7 +56,6 @@ class LiRAMembershipInference:
         if self.sigma_out < 1e-8:
             # Near-degenerate null variance — keep Z-scores finite.
             self.sigma_out = 1e-8
-
     def evaluate_tpr_at_fpr(
         self,
         target_embeddings: np.ndarray,

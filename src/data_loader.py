@@ -1,21 +1,14 @@
 """Load ChatDoctor text corpus for RAG and membership inference experiments."""
-
 import json
 import random
 from pathlib import Path
-
 from sklearn.model_selection import train_test_split
-
 _CHATDOCTOR_FILENAME = "chatdoctor.json"
-
-
 def _default_chatdoctor_path(data_path: str) -> Path:
     p = Path(data_path)
     if p.suffix == ".json":
         return p
     return p / _CHATDOCTOR_FILENAME
-
-
 def _generate_mock_chatdoctor_corpus(n: int = 1000, seed: int = 42) -> list[str]:
     """Return synthetic medical Q&A strings when no real dataset is present."""
     rng = random.Random(seed)
@@ -37,8 +30,6 @@ def _generate_mock_chatdoctor_corpus(n: int = 1000, seed: int = 42) -> list[str]
             f"Doctor: {a} Follow up as needed for your {s}."
         )
     return lines
-
-
 def _read_strings_from_json(path: Path) -> list[str]:
     """Parse a ChatDoctor JSON file into a flat list of dialogue strings."""
     with path.open(encoding="utf-8") as f:
@@ -65,16 +56,12 @@ def _read_strings_from_json(path: Path) -> list[str]:
         return out
     msg = f"Expected list of str or list of objects in {path}"
     raise TypeError(msg)
-
-
 class ChatDoctorLoader:
     """Load and optionally split the ChatDoctor corpus."""
-
     def __init__(self, data_path: str) -> None:
         self.data_path = data_path
         self._json_path = _default_chatdoctor_path(data_path)
         self._cached: list[str] | None = None
-
     def load_data(self) -> list[str]:
         """Return corpus strings, falling back to a synthetic mock if file is absent."""
         if self._cached is not None:
@@ -84,7 +71,6 @@ class ChatDoctorLoader:
         else:
             self._cached = _generate_mock_chatdoctor_corpus(1000, seed=42)
         return list(self._cached)
-
     def get_mia_splits(self, test_size: float = 0.3) -> tuple[list[str], list[str]]:
         """Split corpus into (member, non-member) pools with fixed seed 42."""
         all_rows = self.load_data()

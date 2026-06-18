@@ -1,15 +1,10 @@
 """Nearest-neighbour embedding inversion attack with ROUGE-L scoring."""
-
 import faiss
 import numpy as np
 from rouge_score import rouge_scorer
-
-
 class EmbeddingInversion:
     """FAISS 1-NN lookup from noisy embeddings to reference corpus text."""
-
     EMBED_DIM: int = 384
-
     def __init__(
         self,
         reference_corpus: list[str],
@@ -28,7 +23,6 @@ class EmbeddingInversion:
         self.index = faiss.IndexFlatL2(self.EMBED_DIM)
         self.index.add(mat)
         self.rouge = rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
-
     def nearest_neighbor_lookup(
         self, target_embedding: np.ndarray, original_text: str
     ) -> dict[str, str | float]:

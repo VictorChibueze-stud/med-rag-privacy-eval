@@ -1,21 +1,15 @@
 """Generate academic figures from `data/results.csv` (long format)."""
-
 from __future__ import annotations
-
 import sys
 from pathlib import Path
-
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 import seaborn as sns
-
 # Project root: ``python scripts/plot_results.py`` from the repository root.
 _ROOT = Path(__file__).resolve().parents[1]
-
 RESULTS_CSV = _ROOT / "data" / "results.csv"
 FIG_DIR = _ROOT / "docs" / "figures"
-
 # Long (tidy) column names produced by ``scripts/run_experiments.py``.
 # Sprint 1 adds optional ``run_id`` so points can aggregate to mean ± std bands.
 LONG_REQUIRED_COLUMNS = [
@@ -32,7 +26,6 @@ LONG_OPTIONAL_COLUMNS = [
     "bert_precision",
     "bert_recall",
 ]
-
 # Legacy wide-format column mapping (Sprint 4 results.csv).
 # Maps new tidy name -> old wide suffixed column name.
 WIDE_CENTRAL_POSTFIXES = {
@@ -45,8 +38,6 @@ WIDE_LOCAL_POSTFIXES = {
     "tpr_mia": "tpr_mia_local",
     "inversion_rouge_l_mean": "inversion_rouge_l_mean_local",
 }
-
-
 def _load_demo_long() -> pd.DataFrame:
     """Plausible rows when `data/results.csv` is absent (e.g. clean clone)."""
     eps = [0.1, 1.0, 5.0, 10.0]
@@ -111,8 +102,6 @@ def _load_demo_long() -> pd.DataFrame:
                 },
             ]
     return pd.DataFrame(rows)
-
-
 def _wide_to_long(df: pd.DataFrame) -> pd.DataFrame:
     """Melt a legacy wide ``run_experiments`` frame into the tidy format."""
     if "epsilon" not in df.columns:
@@ -133,8 +122,6 @@ def _wide_to_long(df: pd.DataFrame) -> pd.DataFrame:
         sub["mechanism"] = mname
         parts.append(sub)
     return pd.concat(parts, ignore_index=True)
-
-
 def load_results() -> pd.DataFrame:
     """Read CSV and normalize to a tidy long table."""
     if RESULTS_CSV.is_file():
@@ -176,8 +163,6 @@ def load_results() -> pd.DataFrame:
         if c in out.columns:
             out[c] = pd.to_numeric(out[c], errors="coerce")
     return out
-
-
 def _lineplot_save(
     df: pd.DataFrame,
     ycol: str,
@@ -189,12 +174,10 @@ def _lineplot_save(
     if ycol not in df.columns:
         print(f"Skipping {out_name}: column {ycol!r} is not present.")
         return
-
     sns.set_theme(style="whitegrid")
     # Exclude Baseline from the tradeoff line (it has epsilon=inf).
     d = df[df["mechanism"] != "Baseline"].sort_values(["mechanism", "epsilon"]).copy()
     d["mechanism"] = d["mechanism"].str.strip()
-
     fig, ax = plt.subplots(figsize=(6, 4), dpi=100)
     sns.lineplot(
         data=d,
@@ -209,7 +192,6 @@ def _lineplot_save(
         estimator="mean",
         ax=ax,
     )
-
     # Add horizontal dotted baseline if present.
     baseline_rows = df[df["mechanism"] == "Baseline"]
     if not baseline_rows.empty and ycol in baseline_rows.columns:
@@ -222,27 +204,21 @@ def _lineplot_save(
             label="Baseline (no noise)",
         )
         ax.legend(title=None)
-
     ax.set_ylabel(ylabel)
     ax.set_xlabel(r"$\epsilon$ (privacy budget)")
-
     eps = np.sort(d["epsilon"].dropna().unique())
     if eps.size >= 2 and (eps.max() / max(float(eps.min()), 1e-12) >= 5.0):
         ax.set_xscale("log")
-
     ax.set_title(title)
     fig.tight_layout()
     out = FIG_DIR / out_name
     fig.savefig(out, dpi=300, bbox_inches="tight", facecolor="white")
     plt.close(fig)
     print(f"Wrote {out}")
-
-
 def main() -> None:
     """Load `results`, emit publication PNGs into ``docs/figures/``."""
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     df = load_results()
-
     _lineplot_save(
         df,
         ycol="bert_f1",
@@ -278,7 +254,5 @@ def main() -> None:
         title="k-NN Distance-Ratio MIA under DP Mechanisms",
         out_name="mia_knn_ratio_vs_epsilon.png",
     )
-
-
 if __name__ == "__main__":
     main()

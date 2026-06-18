@@ -1,21 +1,15 @@
 """Non-private dense retrieval RAG baseline using SentenceTransformers and FAISS."""
-
 import faiss
 import numpy as np
 from sentence_transformers import SentenceTransformer
-
-
 class RAGBaseline:
     """FAISS-backed top-k retriever over L2-normalized SentenceTransformer embeddings."""
-
     EMBED_DIM: int = 384
-
     def __init__(self, model_name: str = "all-MiniLM-L6-v2") -> None:
         self.model_name = model_name
         self.model = SentenceTransformer(model_name)
         self.index = faiss.IndexFlatL2(self.EMBED_DIM)
         self.corpus_map: list[str] = []
-
     def build_index(self, corpus: list[str]) -> None:
         """Encode corpus with L2-normalized vectors and build the FAISS index."""
         if not corpus:
@@ -37,7 +31,6 @@ class RAGBaseline:
         self.corpus_map = list(corpus)
         self.index = faiss.IndexFlatL2(self.EMBED_DIM)
         self.index.add(arr)
-
     def retrieve(self, query: str, k: int = 5) -> list[str]:
         """Return top-k corpus strings by squared L2 distance."""
         if self.index.ntotal == 0 or not self.corpus_map:

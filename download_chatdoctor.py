@@ -1,18 +1,13 @@
 """Download ChatDoctor-HealthCareMagic-100k and save as data/chatdoctor.json."""
-
 from __future__ import annotations
-
 import argparse
 import json
 import sys
 from pathlib import Path
 from typing import Any
-
 DEFAULT_DATASET = "lavita/ChatDoctor-HealthCareMagic-100k"
 DEFAULT_SPLIT = "train"
 DEFAULT_OUTPUT = Path("data/chatdoctor.json")
-
-
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(
         description="Download ChatDoctor from Hugging Face to data/chatdoctor.json.",
@@ -45,8 +40,6 @@ def parse_args() -> argparse.Namespace:
         help="Write compact JSON.",
     )
     return parser.parse_args()
-
-
 def import_load_dataset():
     try:
         from datasets import load_dataset  # type: ignore
@@ -59,16 +52,12 @@ def import_load_dataset():
             "    python download_chatdoctor.py"
         ) from exc
     return load_dataset
-
-
 def normalise_row(row: dict[str, Any]) -> dict[str, str]:
     return {
         "instruction": str(row.get("instruction", "")).strip(),
         "input": str(row.get("input", "")).strip(),
         "output": str(row.get("output", "")).strip(),
     }
-
-
 def main() -> int:
     args = parse_args()
     if args.limit is not None and args.limit <= 0:
@@ -88,7 +77,5 @@ def main() -> int:
     print(f"Saved {len(rows):,} rows to {args.output}")
     print("The project loader will now use this real dataset instead of mock data.")
     return 0
-
-
 if __name__ == "__main__":
     sys.exit(main())

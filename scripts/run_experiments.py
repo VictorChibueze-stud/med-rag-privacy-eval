@@ -1,18 +1,14 @@
 """End-to-end experiment driver: data → encodings → central/local DP → eval metrics.
-
 Run from the repository root, e.g.:
 ``python scripts/run_experiments.py`` or
 ``python -m scripts.run_experiments`` (if ``pythonpath`` is set).
 """
-
 from __future__ import annotations
-
 import logging
 import random
 import sys
 import time
 from pathlib import Path
-
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s | %(levelname)s | %(message)s",
@@ -23,17 +19,14 @@ logging.basicConfig(
     ],
 )
 log = logging.getLogger(__name__)
-
 # Allow ``python scripts/run_experiments.py`` without a prior PYTHONPATH=.
 _ROOT = Path(__file__).resolve().parents[1]
 if str(_ROOT) not in sys.path:
     sys.path.insert(0, str(_ROOT))
-
 import numpy as np
 import pandas as pd
 import torch
 from sklearn.model_selection import train_test_split
-
 from src.data_loader import ChatDoctorLoader
 from src.evaluation.inversion import EmbeddingInversion
 from src.evaluation.inversion_probe import LinearProbeInversion
@@ -44,19 +37,14 @@ from src.models.central_dp import CentralDPMechanism
 from src.models.local_dp import LocalDPProjector
 from src.models.metric_dp import MetricDPMechanism
 from src.models.rag_baseline import RAGBaseline
-
 # Sprint 1: repeat the stochastic DP mechanisms to estimate mean ± std curves.
 N_RUNS = 5
 EPSILONS = [0.1, 1.0, 5.0, 10.0]
-
-
 def _seed_everything(seed: int) -> None:
     """Reset all RNGs used by this script for one reproducible realization."""
     random.seed(seed)
     np.random.seed(seed)
     torch.manual_seed(seed)
-
-
 def _encode_corpus(model: RAGBaseline, texts: list[str], label: str) -> np.ndarray:
     """Helper: ST encoder, L2-norm, float32, shape ``(n, 384)``."""
     log.info("Encoding start | phase=%s | texts=%d", label, len(texts))
@@ -67,8 +55,6 @@ def _encode_corpus(model: RAGBaseline, texts: list[str], label: str) -> np.ndarr
     )
     log.info("Encoding finished | phase=%s | texts=%d", label, len(texts))
     return np.asarray(arr, dtype=np.float32)
-
-
 def _eval_mechanism(
     embs: np.ndarray,
     target_labels: np.ndarray,
@@ -82,7 +68,6 @@ def _eval_mechanism(
     label: str,
 ) -> dict[str, float]:
     """Run MIA, inversion, and BERTScore evaluation on a batch of embeddings.
-
     Args:
         embs: ``(N, 384)`` possibly privatised embeddings to evaluate.
         target_labels: ``(N,)`` member (1) / non-member (0) labels.
@@ -95,7 +80,6 @@ def _eval_mechanism(
         inv: Built ``EmbeddingInversion`` index.
         probe: Fitted ``LinearProbeInversion`` attack.
         util: ``UtilityEvaluator`` instance.
-
     Returns:
         Dict with keys ``tpr_mia``, ``tpr_mia_knn_ratio``,
         ``inversion_rouge_l_mean``, ``probe_rouge_l_mean``, ``bert_precision``,
@@ -107,19 +91,15 @@ def _eval_mechanism(
         tpr_knn_ratio = float("nan")
     else:
         tpr_knn_ratio = knn_ratio.evaluate_tpr_at_fpr(embs64, target_labels, 0.001)
-
     rouge_scores = []
     probe_scores = []
     for j in sample_i:
         rc = inv.nearest_neighbor_lookup(embs[j], orig_by_row[j])
         rouge_scores.append(float(rc["rouge_l_fmeasure"]))
-
         ps = probe.score(embs[j], orig_by_row[j])
         probe_scores.append(float(ps["rouge_l_fmeasure"]))
-
     mean_rouge = float(np.mean(rouge_scores)) if rouge_scores else 0.0
     mean_probe_rouge = float(np.mean(probe_scores)) if probe_scores else 0.0
-
     cands, refs = [], []
     for j in range(embs.shape[0]):
         cands.append(
@@ -129,7 +109,6 @@ def _eval_mechanism(
     log.info("BERTScore starting — this may take several minutes on CPU | %s", label)
     bs = util.compute_bertscore(references=refs, candidates=cands)
     log.info("BERTScore finished | %s", label)
-
     return {
         "tpr_mia": tpr,
         "tpr_mia_knn_ratio": tpr_knn_ratio,
@@ -139,14 +118,11 @@ def _eval_mechanism(
         "bert_recall": bs["recall"],
         "bert_f1": bs["f1"],
     }
-
-
 def main() -> None:
     """70/30 target vs. shadow, LiRA, inversion ROUGE, and BERTScore utility by ε."""
     start_time = time.time()
     # Global seeds for deterministic setup before per-run stochastic DP draws.
     _seed_everything(0)
-
     log.info("Experiment script starting")
     loader = ChatDoctorLoader("data")
     all_texts = loader.load_data()
@@ -166,7 +142,6 @@ def main() -> None:
     if n < 4:
         msg = f"Need at least 4 lines for MIA splits; got {n}."
         raise RuntimeError(msg)
-
     # 70% target (attack evaluation), 30% shadow (fit shadow LR + null moments).
     target_texts, shadow_texts = train_test_split(
         all_texts,
@@ -181,13 +156,11 @@ def main() -> None:
     tm_text, tnm_text = train_test_split(
         target_texts, test_size=0.5, random_state=22, shuffle=True
     )
-
     rag = RAGBaseline()
     e_sm = _encode_corpus(rag, sm_text, "shadow members")
     e_snm = _encode_corpus(rag, snm_text, "shadow non-members")
     e_tm = _encode_corpus(rag, tm_text, "target members")
     e_tnm = _encode_corpus(rag, tnm_text, "target non-members")
-
     target_embs = np.vstack([e_tm, e_tnm])
     target_labels = np.concatenate(
         [
@@ -198,17 +171,14 @@ def main() -> None:
     all_clean = _encode_corpus(rag, all_texts, "clean reference corpus")
     # Row-aligned texts for the global retrieval index.
     line_texts: list[str] = list(all_texts)
-
     lira = LiRAMembershipInference(n_shadow_models=16)
     log.info("LiRA shadow training starting | shadow_models=%d", lira.n_shadow_models)
     lira.train_shadow_models(e_sm, e_snm)
     log.info("LiRA shadow training finished | shadow_models=%d", lira.n_shadow_models)
-
     knn_ratio = KNNDistanceRatioMembershipInference(k=5)
     log.info("k-NN distance-ratio MIA fitting starting | k=%d", knn_ratio.k)
     knn_ratio.fit(e_sm, e_snm)
     log.info("k-NN distance-ratio MIA fitting finished | k=%d", knn_ratio.k)
-
     # Fixed 100 target rows to compare ROUGE across ε without resampling noise.
     rng = np.random.default_rng(42)
     sample_i = rng.choice(
@@ -218,7 +188,6 @@ def main() -> None:
     text_tm = list(tm_text)
     text_tnm = list(tnm_text)
     orig_by_row = text_tm + text_tnm
-
     inv = EmbeddingInversion(
         line_texts, np.ascontiguousarray(all_clean, dtype=np.float32)
     )
@@ -231,9 +200,7 @@ def main() -> None:
         "one-time load, this may take a few minutes"
     )
     util = UtilityEvaluator()
-
     rows: list[dict[str, float | str]] = []
-
     # --- Baseline: unperturbed embeddings (epsilon = inf) ---
     log.info("Baseline evaluation starting")
     baseline_embs = np.copy(target_embs)
@@ -258,12 +225,10 @@ def main() -> None:
         }
     )
     log.info("Baseline evaluation finished")
-
     # --- Privacy sweep: multiple stochastic realizations per mechanism/epsilon. ---
     for run_id in range(N_RUNS):
         _seed_everything(run_id)
         log.info("Starting DP realization | run=%d/%d", run_id + 1, N_RUNS)
-
         for eps in EPSILONS:
             # Central DP
             log.info(
@@ -301,7 +266,6 @@ def main() -> None:
                 run_id,
                 eps,
             )
-
             # Local DP
             log.info(
                 "Evaluation starting | run_id=%d | epsilon=%s | mechanism=Local",
@@ -342,7 +306,6 @@ def main() -> None:
                 run_id,
                 eps,
             )
-
             # Metric DP
             log.info(
                 "Evaluation starting | run_id=%d | epsilon=%s | mechanism=Metric",
@@ -382,7 +345,6 @@ def main() -> None:
                 run_id,
                 eps,
             )
-
     out_dir = _ROOT / "data"
     out_dir.mkdir(parents=True, exist_ok=True)
     df = pd.DataFrame(rows)
@@ -412,7 +374,5 @@ def main() -> None:
         elapsed_minutes,
         elapsed_seconds,
     )
-
-
 if __name__ == "__main__":
     main()

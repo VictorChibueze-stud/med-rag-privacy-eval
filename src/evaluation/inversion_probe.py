@@ -1,23 +1,15 @@
 """Linear-probe embedding inversion via Ridge regression on bag-of-words targets."""
-
 from __future__ import annotations
-
 import numpy as np
-
 try:
     from rouge_score import rouge_scorer
 except ModuleNotFoundError:  # pragma: no cover
     rouge_scorer = None
-
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.linear_model import Ridge
-
-
 class _RougeLScore:
     def __init__(self, fmeasure: float) -> None:
         self.fmeasure = float(fmeasure)
-
-
 class _FallbackRougeScorer:
     @staticmethod
     def _lcs_len(a: list[str], b: list[str]) -> int:
@@ -31,7 +23,6 @@ class _FallbackRougeScorer:
                     curr.append(max(prev[j], curr[-1]))
             prev = curr
         return prev[-1]
-
     def score(self, target: str, prediction: str) -> dict[str, _RougeLScore]:
         target_tokens = str(target).lower().split()
         pred_tokens = str(prediction).lower().split()
@@ -45,17 +36,12 @@ class _FallbackRougeScorer:
         else:
             f1 = 2.0 * precision * recall / (precision + recall)
         return {"rougeL": _RougeLScore(f1)}
-
-
 def _build_rouge_scorer():
     if rouge_scorer is not None:
         return rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
     return _FallbackRougeScorer()
-
-
 class LinearProbeInversion:
     """Linear Ridge decoder from embeddings to bag-of-words token indicators."""
-
     def __init__(
         self,
         max_features: int = 2000,
@@ -71,7 +57,6 @@ class LinearProbeInversion:
         if alpha < 0.0:
             msg = "alpha must be non-negative."
             raise ValueError(msg)
-
         self.max_features = int(max_features)
         self.top_k_tokens = int(top_k_tokens)
         self.vectorizer = CountVectorizer(max_features=self.max_features, binary=True)
@@ -79,7 +64,6 @@ class LinearProbeInversion:
         self.rouge = _build_rouge_scorer()
         self._is_fitted = False
         self._embedding_dim: int | None = None
-
     @staticmethod
     def _as_2d_embeddings(embeddings: np.ndarray, name: str) -> np.ndarray:
         x = np.asarray(embeddings, dtype=np.float32)
@@ -95,7 +79,6 @@ class LinearProbeInversion:
             msg = f"{name} contains NaN or infinite values."
             raise ValueError(msg)
         return x
-
     def fit(self, corpus_texts: list[str], corpus_embeddings: np.ndarray) -> None:
         """Fit vectorizer and Ridge probe on clean reference embeddings."""
         texts = list(corpus_texts)
@@ -109,18 +92,15 @@ class LinearProbeInversion:
         if not texts:
             msg = "corpus_texts must contain at least one document."
             raise ValueError(msg)
-
         bow = self.vectorizer.fit_transform(texts).toarray().astype(np.float32)
         self.probe.fit(x, bow)
         self._embedding_dim = int(x.shape[1])
         self._is_fitted = True
-
     def reconstruct(self, embedding: np.ndarray) -> str:
         """Decode one embedding into a space-joined top-k token string."""
         if not self._is_fitted or self._embedding_dim is None:
             msg = "LinearProbeInversion must be fitted before reconstruction."
             raise RuntimeError(msg)
-
         e = self._as_2d_embeddings(embedding, "embedding")
         if e.shape[0] != 1:
             msg = "reconstruct expects exactly one embedding row."
@@ -130,13 +110,11 @@ class LinearProbeInversion:
                 f"Expected embedding width {self._embedding_dim}, got {e.shape[1]}."
             )
             raise ValueError(msg)
-
         bow_pred = np.asarray(self.probe.predict(e)[0], dtype=np.float32)
         vocab = self.vectorizer.get_feature_names_out()
         k = min(self.top_k_tokens, len(vocab))
         top_idx = np.argsort(bow_pred)[::-1][:k]
         return " ".join(str(vocab[i]) for i in top_idx)
-
     def score(
         self, embedding: np.ndarray, original_text: str
     ) -> dict[str, str | float]:
