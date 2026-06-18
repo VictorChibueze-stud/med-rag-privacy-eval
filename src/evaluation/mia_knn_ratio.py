@@ -1,10 +1,4 @@
-"""k-NN distance-ratio membership inference baseline.
-
-This is intentionally simpler than LiRA: the attacker keeps two auxiliary banks of
-shadow embeddings, one member-like and one non-member-like.  A target point is
-called more member-like when it is closer to the member bank than to the
-non-member bank.
-"""
+"""k-NN distance-ratio membership inference baseline."""
 
 from __future__ import annotations
 
@@ -13,26 +7,12 @@ from sklearn.neighbors import NearestNeighbors
 
 
 class KNNDistanceRatioMembershipInference:
-    """Membership inference using a k-nearest-neighbour distance ratio.
+    """Membership inference via log-ratio of mean k-NN distances to member vs. non-member banks.
 
-    For each target embedding ``x`` we compute the mean Euclidean distance to its
-    ``k`` nearest shadow-member embeddings (``d_member``) and to its ``k`` nearest
-    shadow-non-member embeddings (``d_non_member``).  The member score is
-
-    ``score(x) = log((d_non_member + eps) / (d_member + eps))``.
-
-    Larger scores mean ``x`` is relatively closer to the shadow-member bank and
-    therefore more likely to be a member.  This gives a lightweight second MIA
-    baseline that can be evaluated with the same TPR-at-FPR protocol as LiRA.
+    score(x) = log((d_non_member + eps) / (d_member + eps)); higher means more member-like.
     """
 
     def __init__(self, k: int = 5, eps: float = 1e-12) -> None:
-        """Create an unfitted k-NN distance-ratio attack.
-
-        Args:
-            k: Number of nearest neighbours averaged in each reference bank.
-            eps: Small constant to keep the distance ratio finite.
-        """
         if k <= 0:
             msg = "k must be positive."
             raise ValueError(msg)
@@ -49,7 +29,6 @@ class KNNDistanceRatioMembershipInference:
 
     @staticmethod
     def _as_2d_float(name: str, embeddings: np.ndarray) -> np.ndarray:
-        """Validate an embedding array and return a contiguous float64 matrix."""
         x = np.asarray(embeddings, dtype=np.float64)
         if x.ndim == 1:
             x = x.reshape(1, -1)
@@ -66,15 +45,7 @@ class KNNDistanceRatioMembershipInference:
         shadow_member_embeddings: np.ndarray,
         shadow_non_member_embeddings: np.ndarray,
     ) -> "KNNDistanceRatioMembershipInference":
-        """Fit the two auxiliary k-NN reference banks.
-
-        Args:
-            shadow_member_embeddings: ``(n_m, d)`` member-like shadow vectors.
-            shadow_non_member_embeddings: ``(n_nm, d)`` non-member-like shadow vectors.
-
-        Returns:
-            ``self`` for chaining.
-        """
+        """Fit member and non-member k-NN reference banks."""
         members = self._as_2d_float("shadow_member_embeddings", shadow_member_embeddings)
         non_members = self._as_2d_float(
             "shadow_non_member_embeddings", shadow_non_member_embeddings
@@ -96,10 +67,7 @@ class KNNDistanceRatioMembershipInference:
         return self
 
     def score_samples(self, target_embeddings: np.ndarray) -> np.ndarray:
-        """Return member-likelihood scores for target embeddings.
-
-        Larger scores are more member-like.  Call ``fit`` before this method.
-        """
+        """Return member-likelihood scores; higher is more member-like."""
         if self._member_nn is None or self._non_member_nn is None or self._dim is None:
             msg = "Call fit() before score_samples()."
             raise RuntimeError(msg)
@@ -120,16 +88,7 @@ class KNNDistanceRatioMembershipInference:
         target_labels: np.ndarray,
         fpr_threshold: float = 0.001,
     ) -> float:
-        """Evaluate TPR at a fixed empirical FPR on target non-members.
-
-        Args:
-            target_embeddings: ``(N, d)`` rows to score.
-            target_labels: ``(N,)`` with ``1`` = member and ``0`` = non-member.
-            fpr_threshold: Desired false-positive rate in ``(0, 1)``.
-
-        Returns:
-            True-positive rate in ``[0, 1]`` for the k-NN ratio attack.
-        """
+        """Return TPR at empirical FPR threshold on target non-members."""
         if not 0.0 < fpr_threshold < 1.0:
             msg = "fpr_threshold must be in (0, 1)."
             raise ValueError(msg)
@@ -144,6 +103,5 @@ class KNNDistanceRatioMembershipInference:
         if non_member_scores.size == 0 or member_scores.size == 0:
             return 0.0
 
-        # Higher score = more member-like. Choose the upper-tail non-member cutoff.
         tau = float(np.quantile(non_member_scores, 1.0 - fpr_threshold))
         return float(np.mean(member_scores > tau))

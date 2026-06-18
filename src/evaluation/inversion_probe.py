@@ -1,12 +1,4 @@
-"""Linear-probe embedding inversion attack.
-
-This attack trains a linear decoder from embedding space to a bag-of-words token
-representation. At evaluation time, a possibly noisy embedding is decoded by
-predicting token activations and returning the top predicted vocabulary items.
-It is stronger than a pure nearest-neighbour lookup because it can compose tokens
-that need not appear in a single retrieved training example, while remaining far
-lighter than sequence-level attacks such as Vec2Text.
-"""
+"""Linear-probe embedding inversion via Ridge regression on bag-of-words targets."""
 
 from __future__ import annotations
 
@@ -14,7 +6,7 @@ import numpy as np
 
 try:
     from rouge_score import rouge_scorer
-except ModuleNotFoundError:  # pragma: no cover - exercised only without dependency.
+except ModuleNotFoundError:  # pragma: no cover
     rouge_scorer = None
 
 from sklearn.feature_extraction.text import CountVectorizer
@@ -22,15 +14,11 @@ from sklearn.linear_model import Ridge
 
 
 class _RougeLScore:
-    """Small score object matching rouge-score's ``.fmeasure`` attribute."""
-
     def __init__(self, fmeasure: float) -> None:
         self.fmeasure = float(fmeasure)
 
 
 class _FallbackRougeScorer:
-    """Minimal ROUGE-L F1 scorer used when ``rouge-score`` is unavailable."""
-
     @staticmethod
     def _lcs_len(a: list[str], b: list[str]) -> int:
         prev = [0] * (len(b) + 1)
@@ -60,22 +48,13 @@ class _FallbackRougeScorer:
 
 
 def _build_rouge_scorer():
-    """Return the official ROUGE scorer when available, else a small fallback."""
     if rouge_scorer is not None:
         return rouge_scorer.RougeScorer(["rougeL"], use_stemmer=True)
     return _FallbackRougeScorer()
 
 
 class LinearProbeInversion:
-    """Train a linear map from embeddings to bag-of-words token indicators.
-
-    Attributes:
-        max_features: Maximum vocabulary size for the bag-of-words target.
-        top_k_tokens: Number of predicted tokens used in each reconstruction.
-        vectorizer: Fitted ``CountVectorizer`` over the attack training corpus.
-        probe: Fitted multi-output ``Ridge`` regressor from embeddings to BoW.
-        rouge: ROUGE-L scorer for reconstruction quality.
-    """
+    """Linear Ridge decoder from embeddings to bag-of-words token indicators."""
 
     def __init__(
         self,
@@ -83,13 +62,6 @@ class LinearProbeInversion:
         top_k_tokens: int = 20,
         alpha: float = 1.0,
     ) -> None:
-        """Configure the probe attack.
-
-        Args:
-            max_features: Maximum number of vocabulary features to predict.
-            top_k_tokens: Number of tokens emitted by ``reconstruct``.
-            alpha: Ridge regularization strength.
-        """
         if max_features <= 0:
             msg = "max_features must be positive."
             raise ValueError(msg)
@@ -110,7 +82,6 @@ class LinearProbeInversion:
 
     @staticmethod
     def _as_2d_embeddings(embeddings: np.ndarray, name: str) -> np.ndarray:
-        """Convert embeddings to a finite 2-D float32 matrix."""
         x = np.asarray(embeddings, dtype=np.float32)
         if x.ndim == 1:
             x = x.reshape(1, -1)
@@ -126,12 +97,7 @@ class LinearProbeInversion:
         return x
 
     def fit(self, corpus_texts: list[str], corpus_embeddings: np.ndarray) -> None:
-        """Fit the vectorizer and linear probe on clean reference embeddings.
-
-        Args:
-            corpus_texts: Raw text strings aligned with ``corpus_embeddings`` rows.
-            corpus_embeddings: ``(N, d)`` clean embeddings for attack training.
-        """
+        """Fit vectorizer and Ridge probe on clean reference embeddings."""
         texts = list(corpus_texts)
         x = self._as_2d_embeddings(corpus_embeddings, "corpus_embeddings")
         if len(texts) != x.shape[0]:
@@ -150,14 +116,7 @@ class LinearProbeInversion:
         self._is_fitted = True
 
     def reconstruct(self, embedding: np.ndarray) -> str:
-        """Decode one embedding into a token-sequence reconstruction.
-
-        Args:
-            embedding: Length-``d`` or ``(1, d)`` possibly noisy embedding vector.
-
-        Returns:
-            Space-joined top predicted tokens from the learned vocabulary.
-        """
+        """Decode one embedding into a space-joined top-k token string."""
         if not self._is_fitted or self._embedding_dim is None:
             msg = "LinearProbeInversion must be fitted before reconstruction."
             raise RuntimeError(msg)
@@ -181,15 +140,7 @@ class LinearProbeInversion:
     def score(
         self, embedding: np.ndarray, original_text: str
     ) -> dict[str, str | float]:
-        """Reconstruct one embedding and compute ROUGE-L against gold text.
-
-        Args:
-            embedding: Length-``d`` or ``(1, d)`` possibly noisy embedding vector.
-            original_text: Gold text for this sample.
-
-        Returns:
-            Dict with ``reconstructed_text`` and ``rouge_l_fmeasure``.
-        """
+        """Reconstruct embedding and return ROUGE-L F-measure against gold text."""
         reconstructed = self.reconstruct(embedding)
         scores = self.rouge.score(str(original_text), reconstructed)
         return {
