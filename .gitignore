@@ -120,3 +120,10 @@ niramay_results.csv
 
 PROJECT_STATUS.md
 WRITING_GUIDE.md
+
+docs/*.aux
+docs/*.log
+docs/*.bbl
+docs/*.blg
+docs/*.out
+docs/*.pptx
